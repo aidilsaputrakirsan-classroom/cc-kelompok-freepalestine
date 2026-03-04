@@ -6,6 +6,12 @@
 
 ---
 
+## Swagger UI — Semua Endpoints
+
+![Swagger UI Overview](screenshots/01-swagger-overview.png)
+
+---
+
 ## Ringkasan Hasil Testing
 
 | No | Endpoint | Method | Status | Result |
@@ -44,6 +50,9 @@ Content-Type: application/json
 ```
 
 **Response (201 Created):**
+
+![POST /items Response 201](screenshots/02-post-items-201.png)
+
 ```json
 {
   "id": 1,
@@ -51,7 +60,7 @@ Content-Type: application/json
   "price": 15000000.0,
   "description": "Laptop untuk cloud computing",
   "quantity": 5,
-  "created_at": "2026-03-04T03:11:...",
+  "created_at": "2026-03-04T10:39:55...",
   "updated_at": null
 }
 ```
@@ -60,14 +69,12 @@ Content-Type: application/json
 ```json
 {"name": "Mouse Wireless", "price": 250000, "description": "Mouse bluetooth", "quantity": 20}
 ```
-
 **Response (201 Created):** ✅ id=2
 
 **Body Item 3 (Keyboard Mechanical):**
 ```json
 {"name": "Keyboard Mechanical", "price": 1200000, "description": "Keyboard untuk coding", "quantity": 8}
 ```
-
 **Response (201 Created):** ✅ id=3
 
 ---
@@ -80,6 +87,9 @@ GET /items
 ```
 
 **Response (200 OK):**
+
+![GET /items Response 200](screenshots/03-get-items-200.png)
+
 ```json
 {
   "total": 3,
@@ -110,7 +120,7 @@ GET /items/1
   "price": 15000000.0,
   "description": "Laptop untuk cloud computing",
   "quantity": 5,
-  "created_at": "2026-03-04T03:11:...",
+  "created_at": "2026-03-04T10:39:55...",
   "updated_at": null
 }
 ```
@@ -137,8 +147,8 @@ Content-Type: application/json
   "price": 14000000.0,
   "description": "Laptop untuk cloud computing",
   "quantity": 5,
-  "created_at": "2026-03-04T03:11:...",
-  "updated_at": "2026-03-04T03:11:..."
+  "created_at": "2026-03-04T10:39:55...",
+  "updated_at": "2026-03-04T10:39:55..."
 }
 ```
 
@@ -185,6 +195,8 @@ DELETE /items/1
 
 **Response: 204 No Content** ✅
 
+![DELETE /items Response 204](screenshots/05-delete-items-204.png)
+
 ---
 
 ### 8. GET /items/1 — Verifikasi Delete (Expected 404)
@@ -213,22 +225,25 @@ GET /items/stats
 ```
 
 **Response (200 OK):**
+
+![GET /items/stats Response 200](screenshots/04-get-items-stats-200.png)
+
 ```json
 {
-  "total_items": 2,
-  "total_value": 14600000.0,
+  "total_items": 4,
+  "total_value": 45500000.0,
   "most_expensive": {
-    "name": "Keyboard Mechanical",
-    "price": 1200000.0
+    "name": "Laptop",
+    "price": 15000000.0
   },
   "cheapest": {
-    "name": "Mouse Wireless",
-    "price": 250000.0
+    "name": "Keyboard Mechanical",
+    "price": 1200000.0
   }
 }
 ```
 
-✅ Statistik benar: 2 item tersisa, total value = (1200000×8) + (250000×20) = 14600000.
+✅ Statistik benar: total items, total value (price × quantity), item termahal, item termurah.
 
 ---
 
@@ -259,22 +274,6 @@ GET /items/stats
 ```
 
 ✅ Data tim lengkap dan benar.
-
----
-
-## Swagger UI
-
-Dokumentasi API otomatis tersedia di: `http://localhost:8000/docs`
-
-Swagger UI menampilkan semua endpoint berikut:
-- `GET /health` — Health check
-- `POST /items` — Create item
-- `GET /items` — List items (dengan pagination + search)
-- `GET /items/stats` — Statistik inventory
-- `GET /items/{item_id}` — Get item by ID
-- `PUT /items/{item_id}` — Update item
-- `DELETE /items/{item_id}` — Delete item
-- `GET /team` — Team info
 
 ---
 
