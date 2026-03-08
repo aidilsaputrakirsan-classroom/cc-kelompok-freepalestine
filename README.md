@@ -102,12 +102,44 @@ cc-kelompok-freepalestine/
 
 ## 📝 API Endpoints
 
-| Method | Endpoint | Deskripsi |
-|--------|----------|-----------|
-| GET | `/` | Root - info aplikasi |
-| GET | `/health` | Health check |
-| GET | `/team` | Informasi tim |
-| GET | `/docs` | Swagger UI (auto-generated) |
+
+| Method | Endpoint | Deskripsi | Request Body |
+|--------|----------|-----------|--------------| 
+| GET | `/` | Root - info aplikasi | - |
+| GET | `/health` | Health check | - |
+| GET | `/team` | Informasi tim | - |
+| POST | `/items` | Buat item baru | `{"name": "...", "price": ..., "description": "...", "quantity": ...}` |
+| GET | `/items` | List semua items (pagination + search) | Query: `skip`, `limit`, `search` |
+| GET | `/items/{id}` | Ambil item berdasarkan ID | - |
+| PUT | `/items/{id}` | Update item | `{"name": "...", "price": ..., ...}` (partial) |
+| DELETE | `/items/{id}` | Hapus item | - |
+| GET | `/items/stats` | Statistik inventory | - |
+| GET | `/docs` | Swagger UI (auto-generated) | - |
+
+### Contoh Response
+
+**POST /items (201 Created):**
+```json
+{
+  "id": 1,
+  "name": "Laptop",
+  "price": 15000000.0,
+  "description": "Laptop untuk cloud computing",
+  "quantity": 5,
+  "created_at": "2026-03-04T10:00:00",
+  "updated_at": null
+}
+```
+
+**GET /items/stats (200 OK):**
+```json
+{
+  "total_items": 3,
+  "total_value": 84600000.0,
+  "most_expensive": {"name": "Laptop", "price": 15000000.0},
+  "cheapest": {"name": "Mouse Wireless", "price": 250000.0}
+}
+```
 
 ## 📄 Lisensi
 
