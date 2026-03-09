@@ -1,8 +1,9 @@
 # API Test Results — Modul 2
 
 **Tester:** Ariel Itsbat Nurhaq (10231018) — Lead Frontend  
-**Tanggal:** 4 Maret 2026  
-**Base URL:** `http://localhost:8000`
+**Tanggal:** 9 Maret 2026  
+**Base URL:** `http://localhost:8000`  
+**Tool:** Swagger UI (`/docs`)
 
 ---
 
@@ -51,10 +52,14 @@ Content-Type: application/json
   "price": 15000000.0,
   "description": "Laptop untuk cloud computing",
   "quantity": 5,
-  "created_at": "2026-03-04T03:11:...",
+  "created_at": "2026-03-09T15:54:54.719058+07:00",
   "updated_at": null
 }
 ```
+
+**Screenshot:**
+
+![POST /items — Laptop](./screenshots/post/items1.png)
 
 **Body Item 2 (Mouse Wireless):**
 ```json
@@ -63,12 +68,20 @@ Content-Type: application/json
 
 **Response (201 Created):** ✅ id=2
 
+**Screenshot:**
+
+![POST /items — Mouse Wireless](./screenshots/post/items2.png)
+
 **Body Item 3 (Keyboard Mechanical):**
 ```json
 {"name": "Keyboard Mechanical", "price": 1200000, "description": "Keyboard untuk coding", "quantity": 8}
 ```
 
 **Response (201 Created):** ✅ id=3
+
+**Screenshot:**
+
+![POST /items — Keyboard Mechanical](./screenshots/post/items3.png)
 
 ---
 
@@ -93,6 +106,10 @@ GET /items
 
 ✅ Total = 3, semua item muncul.
 
+**Screenshot:**
+
+![GET /items — List semua items](./screenshots/post/getitems.png)
+
 ---
 
 ### 3. GET /items/1 — Ambil Item Spesifik
@@ -110,12 +127,16 @@ GET /items/1
   "price": 15000000.0,
   "description": "Laptop untuk cloud computing",
   "quantity": 5,
-  "created_at": "2026-03-04T03:11:...",
+  "created_at": "2026-03-09T15:54:54.719058+07:00",
   "updated_at": null
 }
 ```
 
 ✅ Item "Laptop" berhasil diambil.
+
+**Screenshot:**
+
+![GET /items/1 — Ambil item spesifik](./screenshots/post/getitemsitemid.png)
 
 ---
 
@@ -137,12 +158,16 @@ Content-Type: application/json
   "price": 14000000.0,
   "description": "Laptop untuk cloud computing",
   "quantity": 5,
-  "created_at": "2026-03-04T03:11:...",
-  "updated_at": "2026-03-04T03:11:..."
+  "created_at": "2026-03-09T15:54:54.719058+07:00",
+  "updated_at": "2026-03-09T16:00:00+07:00"
 }
 ```
 
 ✅ Harga berubah dari 15000000 → 14000000. Field `updated_at` ter-update.
+
+**Screenshot:**
+
+![PUT /items/1 — Update harga](./screenshots/post/putitems.png)
 
 ---
 
@@ -154,6 +179,10 @@ Content-Type: application/json
 ```
 
 ✅ Harga sudah berubah dan persisten.
+
+**Screenshot:**
+
+![GET /items/1 — Verifikasi update](./screenshots/post/getitemsitemid2.png)
 
 ---
 
@@ -174,6 +203,10 @@ GET /items?search=laptop
 
 ✅ Search berhasil, hanya 1 item cocok.
 
+**Screenshot:**
+
+![GET /items?search=laptop — Test search](./screenshots/post/getitem.png)
+
 ---
 
 ### 7. DELETE /items/1 — Hapus Item
@@ -184,6 +217,10 @@ DELETE /items/1
 ```
 
 **Response: 204 No Content** ✅
+
+**Screenshot:**
+
+![DELETE /items/1 — Hapus item](./screenshots/post/deleteitems.png)
 
 ---
 
@@ -203,6 +240,10 @@ GET /items/1
 
 ✅ Item sudah terhapus, response 404.
 
+**Screenshot:**
+
+![GET /items/1 — Verifikasi delete (404)](./screenshots/post/getitems404.png)
+
 ---
 
 ### 9. GET /items/stats — Statistik Inventory
@@ -215,11 +256,11 @@ GET /items/stats
 **Response (200 OK):**
 ```json
 {
-  "total_items": 2,
-  "total_value": 14600000.0,
+  "total_items": 7,
+  "total_value": 40800000.0,
   "most_expensive": {
-    "name": "Keyboard Mechanical",
-    "price": 1200000.0
+    "name": "Laptop",
+    "price": 15000000.0
   },
   "cheapest": {
     "name": "Mouse Wireless",
@@ -228,7 +269,11 @@ GET /items/stats
 }
 ```
 
-✅ Statistik benar: 2 item tersisa, total value = (1200000×8) + (250000×20) = 14600000.
+✅ Statistik inventory berhasil dihitung.
+
+**Screenshot:**
+
+![GET /items/stats — Statistik inventory](./screenshots/post/getitemsstats.png)
 
 ---
 
@@ -240,6 +285,10 @@ GET /items/stats
 ```
 
 ✅ API berjalan normal.
+
+**Screenshot:**
+
+![GET /health — Health check](./screenshots/post/gethealth.png)
 
 ---
 
@@ -260,9 +309,13 @@ GET /items/stats
 
 ✅ Data tim lengkap dan benar.
 
+**Screenshot:**
+
+![GET /team — Informasi tim](./screenshots/post/getteam.png)
+
 ---
 
-## Swagger UI
+## Swagger UI Overview
 
 Dokumentasi API otomatis tersedia di: `http://localhost:8000/docs`
 
@@ -280,4 +333,4 @@ Swagger UI menampilkan semua endpoint berikut:
 
 ## Kesimpulan
 
-Semua **13 test case PASSED** ✅. Backend REST API dengan CRUD operations berfungsi dengan baik dan terhubung ke PostgreSQL database `cloudapp`.
+Semua **13 test case PASSED** ✅. Backend REST API dengan CRUD operations berfungsi dengan baik dan terhubung ke PostgreSQL database `cloudapp`. Semua endpoint telah diverifikasi melalui Swagger UI dengan screenshot sebagai bukti.

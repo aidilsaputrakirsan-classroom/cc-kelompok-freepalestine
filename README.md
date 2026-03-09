@@ -75,13 +75,22 @@ Buka browser: http://localhost:5173
 ```
 cc-kelompok-freepalestine/
 ├── backend/
-│   ├── main.py              # FastAPI application
-│   └── requirements.txt     # Python dependencies
+│   ├── main.py              # FastAPI application + CRUD endpoints
+│   ├── database.py          # Koneksi database PostgreSQL
+│   ├── models.py            # SQLAlchemy models (tabel database)
+│   ├── schemas.py           # Pydantic schemas (validasi request/response)
+│   ├── crud.py              # Fungsi CRUD (business logic)
+│   ├── requirements.txt     # Python dependencies
+│   ├── .env                 # Environment variables (TIDAK di-commit!)
+│   └── .env.example         # Template environment variables
 ├── frontend/                # React app (akan dibuat minggu 3)
 ├── docs/
+│   ├── api-test-results.md  # Hasil testing API
+│   ├── database-schema.md   # Schema database
 │   ├── member-ariel.md      # Info anggota
 │   ├── member-radit.md
 │   └── member-irud.md
+├── setup.sh                 # Script install dependencies
 ├── .gitignore
 └── README.md
 ```
@@ -91,7 +100,7 @@ cc-kelompok-freepalestine/
 | Minggu | Target | Status |
 |--------|--------|--------|
 | 1 | Setup & Hello World | ✅ |
-| 2 | REST API + Database | ⬜ |
+| 2 | REST API + Database | ✅ |
 | 3 | React Frontend | ⬜ |
 | 4 | Full-Stack Integration | ⬜ |
 | 5-7 | Docker & Compose | ⬜ |
@@ -102,12 +111,143 @@ cc-kelompok-freepalestine/
 
 ## 📝 API Endpoints
 
+Base URL: `http://localhost:8000`  
+Swagger UI: `http://localhost:8000/docs`
+
+### Health & Info
+
 | Method | Endpoint | Deskripsi |
 |--------|----------|-----------|
-| GET | `/` | Root - info aplikasi |
 | GET | `/health` | Health check |
 | GET | `/team` | Informasi tim |
 | GET | `/docs` | Swagger UI (auto-generated) |
+
+### CRUD — Items
+
+#### 1. `POST /items` — Buat Item Baru
+
+**Request Body:**
+```json
+{
+  "name": "Laptop",
+  "price": 15000000,
+  "description": "Laptop untuk cloud computing",
+  "quantity": 5
+}
+```
+
+**Response (201 Created):**
+```json
+{
+  "id": 1,
+  "name": "Laptop",
+  "price": 15000000.0,
+  "description": "Laptop untuk cloud computing",
+  "quantity": 5,
+  "created_at": "2026-03-04T03:11:00+00:00",
+  "updated_at": null
+}
+```
+
+#### 2. `GET /items` — List Semua Items (dengan pagination & search)
+
+**Query Parameters:**
+| Parameter | Tipe | Default | Deskripsi |
+|-----------|------|---------|-----------|
+| `skip` | int | 0 | Offset untuk pagination |
+| `limit` | int | 20 | Jumlah item per halaman (max 100) |
+| `search` | string | null | Kata kunci pencarian nama/deskripsi |
+
+**Response (200 OK):**
+```json
+{
+  "total": 3,
+  "items": [
+    {
+      "id": 1,
+      "name": "Laptop",
+      "price": 15000000.0,
+      "description": "Laptop untuk cloud computing",
+      "quantity": 5,
+      "created_at": "2026-03-04T03:11:00+00:00",
+      "updated_at": null
+    }
+  ]
+}
+```
+
+#### 3. `GET /items/{item_id}` — Ambil Item by ID
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "name": "Laptop",
+  "price": 15000000.0,
+  "description": "Laptop untuk cloud computing",
+  "quantity": 5,
+  "created_at": "2026-03-04T03:11:00+00:00",
+  "updated_at": null
+}
+```
+
+**Response (404 Not Found):**
+```json
+{
+  "detail": "Item dengan id=999 tidak ditemukan"
+}
+```
+
+#### 4. `PUT /items/{item_id}` — Update Item (Partial Update)
+
+**Request Body** (semua field opsional):
+```json
+{
+  "price": 14000000
+}
+```
+
+**Response (200 OK):**
+```json
+{
+  "id": 1,
+  "name": "Laptop",
+  "price": 14000000.0,
+  "description": "Laptop untuk cloud computing",
+  "quantity": 5,
+  "created_at": "2026-03-04T03:11:00+00:00",
+  "updated_at": "2026-03-04T03:15:00+00:00"
+}
+```
+
+#### 5. `DELETE /items/{item_id}` — Hapus Item
+
+**Response:** `204 No Content`
+
+**Response jika tidak ditemukan (404):**
+```json
+{
+  "detail": "Item dengan id=1 tidak ditemukan"
+}
+```
+
+#### 6. `GET /items/stats` — Statistik Inventory
+
+**Response (200 OK):**
+```json
+{
+  "total_items": 3,
+  "total_value": 84600000.0,
+  "most_expensive": {
+    "name": "Laptop",
+    "price": 15000000.0
+  },
+  "cheapest": {
+    "name": "Mouse Wireless",
+    "price": 250000.0
+  }
+}
+```
 
 ## 📄 Lisensi
 
