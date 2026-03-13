@@ -27,6 +27,16 @@ fi
 cd ..
 cd frontend || { echo "⚠️  Folder 'frontend/' tidak ditemukan, skip frontend setup."; exit 0; }
 
+# 5. Cek file .env frontend
+if [ ! -f .env ]; then
+    echo "⚠️  File frontend/.env tidak ditemukan!"
+    echo "📝 Membuat .env dari .env.example..."
+    cp .env.example .env
+    echo "✅ frontend/.env dibuat. Sesuaikan VITE_API_URL jika backend di URL lain."
+else
+    echo "✅ File frontend/.env sudah ada."
+fi
+
 echo "📦 Installing Node.js dependencies..."
 npm install
 
