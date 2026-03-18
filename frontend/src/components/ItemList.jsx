@@ -2,7 +2,12 @@ import ItemCard from "./ItemCard"
 
 function ItemList({ items, onEdit, onDelete, loading }) {
     if (loading) {
-        return <p style={styles.message}>⏳ Memuat data...</p>
+        return (
+            <div style={styles.loadingWrapper}>
+                <div style={styles.spinner}></div>
+                <p style={styles.message}>Memuat data...</p>
+            </div>
+        )
     }
 
     if (items.length === 0) {
@@ -37,11 +42,25 @@ const styles = {
         gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
         gap: "1rem",
     },
+    loadingWrapper: {
+        textAlign: "center",
+        padding: "3rem",
+    },
+    spinner: {
+        width: "40px",
+        height: "40px",
+        border: "4px solid #e0e0e0",
+        borderTop: "4px solid #1F4E79",
+        borderRadius: "50%",
+        animation: "spin 1s linear infinite",
+        margin: "0 auto 1rem auto",
+    },
     message: {
         textAlign: "center",
         color: "#888",
-        padding: "2rem",
+        padding: "0",
         fontSize: "1.1rem",
+        margin: 0,
     },
     empty: {
         textAlign: "center",
