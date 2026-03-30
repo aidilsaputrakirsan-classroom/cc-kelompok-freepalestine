@@ -83,13 +83,22 @@ postgresql://postgres:passwordAnda@localhost:5432/cloudapp
    Copy-Item .env.example .env
    ```
 
-3. Buka file **`backend/.env`** dan sesuaikan **`DATABASE_URL`** dengan kredensial PostgreSQL Anda:
+3. Buka file **`backend/.env`** dan sesuaikan minimal **`DATABASE_URL`** dengan kredensial PostgreSQL Anda:
 
    ```env
    DATABASE_URL=postgresql://postgres:PASSWORD_ANDA@localhost:5432/cloudapp
    ```
 
-4. **Jangan** commit file `.env`. File ini sudah diabaikan oleh `.gitignore`.
+4. Variabel lain mengikuti **`backend/.env.example`** (sudah ikut tersalin ke `.env`):
+
+   | Variabel | Keterangan |
+   |----------|------------|
+   | `SECRET_KEY` | Kunci penandatanganan JWT. Untuk lokal bisa pakai nilai contoh; untuk produksi ganti string panjang yang acak. |
+   | `ALGORITHM` | Biasanya `HS256`. |
+   | `ACCESS_TOKEN_EXPIRE_MINUTES` | Masa berlaku token (menit). |
+   | `ALLOWED_ORIGINS` | Origin frontend yang diizinkan CORS (default `http://localhost:5173`). Pisahkan dengan koma jika lebih dari satu. |
+
+5. **Jangan** commit file `.env`. File ini sudah diabaikan oleh `.gitignore`.
 
 ---
 
