@@ -83,6 +83,8 @@ cc-kelompok-freepalestine/
 │   ├── schemas.py           # Pydantic schemas (validasi request/response)
 │   ├── crud.py              # Fungsi CRUD (business logic)
 │   ├── requirements.txt     # Python dependencies
+│   ├── Dockerfile           # Image backend (non-root user)
+│   ├── .dockerignore        # File yang dikecualikan dari image
 │   ├── .env                 # Environment variables (TIDAK di-commit!)
 │   └── .env.example         # Template environment variables
 ├── frontend/                # React app (akan dibuat minggu 3)

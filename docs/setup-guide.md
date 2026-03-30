@@ -219,7 +219,36 @@ npm run dev
 
 ---
 
-## 10. Troubleshooting
+## 10. Backend dengan Docker (opsional)
+
+Jika backend dijalankan sebagai container, image memakai user **non-root** (`appuser`) sesuai praktik keamanan.
+
+Dari folder **`backend`**:
+
+```bash
+docker build -t cloudapp-backend:local .
+```
+
+Jalankan dengan variabel lingkungan yang sama seperti `.env` lokal (PostgreSQL harus bisa dijangkau dari container). Di **Docker Desktop** (Windows/macOS), ganti host DB menjadi `host.docker.internal` di `DATABASE_URL` — lihat komentar di `backend/.env.example`.
+
+```bash
+docker run --rm -p 8000:8000 --env-file .env cloudapp-backend:local
+```
+
+Cek: http://localhost:8000/health dan http://localhost:8000/docs .
+
+**Push ke Docker Hub (contoh):**
+
+```bash
+docker tag cloudapp-backend:local USERNAME/cloudapp-backend:v1
+docker push USERNAME/cloudapp-backend:v1
+```
+
+Ganti `USERNAME` dengan akun Docker Hub Anda.
+
+---
+
+## 11. Troubleshooting
 
 | Gejala | Kemungkinan penyebab | Tindakan |
 |--------|----------------------|----------|
@@ -228,3 +257,4 @@ npm run dev
 | Frontend tidak bisa ambil data API | Backend mati / URL salah | Pastikan backend jalan; cek `VITE_API_URL` di `frontend/.env`. Restart `npm run dev` setelah mengubah `.env`. |
 | Error koneksi PostgreSQL | DB belum dibuat / password salah | Uji koneksi dengan psql atau pgAdmin; perbaiki string di `DATABASE_URL`. |
 | Port 8000 atau 5173 sudah dipakai | Aplikasi lain memakai port | Tutup proses tersebut atau ubah port (misalnya `uvicorn ... --port 8001` dan sesuaikan `VITE_API_URL`). |
+| Backend di Docker gagal ke PostgreSQL | Di dalam container, `localhost` bukan host mesin Anda | Gunakan `host.docker.internal` sebagai host di `DATABASE_URL` (Docker Desktop), atau sambungkan ke service DB di jaringan Docker yang sama. |
