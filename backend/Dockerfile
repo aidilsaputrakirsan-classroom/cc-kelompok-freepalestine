@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Application code
 COPY . .
 
-# Non-root user (Tugas Lead DevOps Modul 5)
+# Non-root user
 RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
