@@ -1,19 +1,33 @@
-import { useState, useEffect, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Header from "./components/Header"
 import SearchBar from "./components/SearchBar"
 import ItemForm from "./components/ItemForm"
 import ItemList from "./components/ItemList"
-import { fetchItems, createItem, updateItem, deleteItem, checkHealth } from "./services/api"
+import LoginPage from "./components/LoginPage"
+import Notification from "./components/Notification"
+import {
+  fetchItems, createItem, updateItem, deleteItem,
+  checkHealth, login, register, setToken, clearToken,
+} from "./services/api"
 
 function App() {
-  // ==================== STATE ====================
+  // ==================== AUTH STATE ====================
+  const [user, setUser] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  // ==================== APP STATE ====================
   const [items, setItems] = useState([])
   const [totalItems, setTotalItems] = useState(0)
   const [loading, setLoading] = useState(true)
   const [isConnected, setIsConnected] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
-  const [sortBy, setSortBy] = useState("terbaru")
+  const [notification, setNotification] = useState(null)
+
+  // ==================== NOTIFICATION HELPER ====================
+  const showNotification = (message, type = "success") => {
+    setNotification({ message, type })
+  }
 
   // ==================== LOAD DATA ====================
   const loadItems = useCallback(async (search = "") => {
@@ -23,68 +37,86 @@ function App() {
       setItems(data.items)
       setTotalItems(data.total)
     } catch (err) {
+      if (err.message === "UNAUTHORIZED") {
+        handleLogout()
+      }
       console.error("Error loading items:", err)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  // ==================== ON MOUNT ====================
   useEffect(() => {
-    // Cek koneksi API
     checkHealth().then(setIsConnected)
-    // Load items
-    loadItems()
-  }, [loadItems])
+  }, [])
 
-  // ==================== SORTING ====================
-  const sortedItems = useMemo(() => {
-    const sorted = [...items]
-    switch (sortBy) {
-      case "nama":
-        sorted.sort((a, b) => a.name.localeCompare(b.name))
-        break
-      case "harga":
-        sorted.sort((a, b) => a.price - b.price)
-        break
-      case "terbaru":
-      default:
-        sorted.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
-        break
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadItems()
     }
-    return sorted
-  }, [items, sortBy])
+  }, [isAuthenticated, loadItems])
 
-  // ==================== HANDLERS ====================
+  // ==================== AUTH HANDLERS ====================
+
+  const handleLogin = async (email, password) => {
+    const data = await login(email, password)
+    setUser(data.user)
+    setIsAuthenticated(true)
+    showNotification(`Selamat datang, ${data.user.name}!`)
+  }
+
+  const handleRegister = async (userData) => {
+    await register(userData)
+    await handleLogin(userData.email, userData.password)
+  }
+
+  const handleLogout = () => {
+    clearToken()
+    setUser(null)
+    setIsAuthenticated(false)
+    setItems([])
+    setTotalItems(0)
+    setEditingItem(null)
+    setSearchQuery("")
+  }
+
+  // ==================== ITEM HANDLERS ====================
 
   const handleSubmit = async (itemData, editId) => {
-    if (editId) {
-      // Mode edit
-      await updateItem(editId, itemData)
-      setEditingItem(null)
-    } else {
-      // Mode create
-      await createItem(itemData)
+    try {
+      if (editId) {
+        await updateItem(editId, itemData)
+        setEditingItem(null)
+        showNotification("Item berhasil diupdate!")
+      } else {
+        await createItem(itemData)
+        showNotification("Item berhasil ditambahkan!")
+      }
+      loadItems(searchQuery)
+    } catch (err) {
+      if (err.message === "UNAUTHORIZED") handleLogout()
+      else {
+        showNotification(err.message, "error")
+        throw err
+      }
     }
-    // Reload daftar items
-    loadItems(searchQuery)
   }
 
   const handleEdit = (item) => {
     setEditingItem(item)
-    // Scroll ke atas ke form
     window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   const handleDelete = async (id) => {
     const item = items.find((i) => i.id === id)
     if (!window.confirm(`Yakin ingin menghapus "${item?.name}"?`)) return
-
     try {
       await deleteItem(id)
+      showNotification("Item berhasil dihapus!")
       loadItems(searchQuery)
     } catch (err) {
-      alert("Gagal menghapus: " + err.message)
+      if (err.message === "UNAUTHORIZED") handleLogout()
+      else showNotification("Gagal menghapus: " + err.message, "error")
     }
   }
 
@@ -93,35 +125,36 @@ function App() {
     loadItems(query)
   }
 
-  const handleCancelEdit = () => {
-    setEditingItem(null)
+  // ==================== RENDER ====================
+
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} onRegister={handleRegister} />
   }
 
-  // ==================== RENDER ====================
   return (
     <div style={styles.app}>
       <div style={styles.container}>
-        <Header totalItems={totalItems} isConnected={isConnected} />
+        {notification && (
+          <Notification
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification(null)}
+          />
+        )}
+        <Header
+          totalItems={totalItems}
+          isConnected={isConnected}
+          user={user}
+          onLogout={handleLogout}
+        />
         <ItemForm
           onSubmit={handleSubmit}
           editingItem={editingItem}
-          onCancelEdit={handleCancelEdit}
+          onCancelEdit={() => setEditingItem(null)}
         />
         <SearchBar onSearch={handleSearch} />
-        <div style={styles.sortBar}>
-          <label style={styles.sortLabel}>Urutkan berdasarkan: </label>
-          <select
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value)}
-            style={styles.sortSelect}
-          >
-            <option value="terbaru">Terbaru</option>
-            <option value="nama">Nama</option>
-            <option value="harga">Harga</option>
-          </select>
-        </div>
         <ItemList
-          items={sortedItems}
+          items={items}
           onEdit={handleEdit}
           onDelete={handleDelete}
           loading={loading}
@@ -138,28 +171,7 @@ const styles = {
     padding: "2rem",
     fontFamily: "'Segoe UI', Arial, sans-serif",
   },
-  container: {
-    maxWidth: "900px",
-    margin: "0 auto",
-  },
-  sortBar: {
-    display: "flex",
-    alignItems: "center",
-    gap: "0.5rem",
-    marginBottom: "1rem",
-  },
-  sortLabel: {
-    fontSize: "0.9rem",
-    color: "#555",
-  },
-  sortSelect: {
-    padding: "0.5rem 0.75rem",
-    fontSize: "0.9rem",
-    border: "2px solid #ddd",
-    borderRadius: "6px",
-    outline: "none",
-    cursor: "pointer",
-  },
+  container: { maxWidth: "900px", margin: "0 auto" },
 }
 
 export default App

@@ -104,8 +104,8 @@ cc-kelompok-freepalestine/
 |--------|--------|--------|
 | 1 | Setup & Hello World | ✅ |
 | 2 | REST API + Database | ✅ |
-| 3 | React Frontend | ⬜ |
-| 4 | Full-Stack Integration | ⬜ |
+| 3 | React Frontend | ✅ |
+| 4 | Full-Stack Integration | ✅ |
 | 5-7 | Docker & Compose | ⬜ |
 | 8 | UTS Demo | ⬜ |
 | 9-11 | CI/CD Pipeline | ⬜ |
@@ -251,6 +251,28 @@ Swagger UI: `http://localhost:8000/docs`
   }
 }
 ```
+
+## 🔐 Authentication
+
+Aplikasi menggunakan **JWT (JSON Web Token)** untuk autentikasi. Semua endpoint `/items` membutuhkan token.
+
+### Alur Auth
+1. **Register** → `POST /auth/register` dengan email, nama, password
+2. **Login** → `POST /auth/login` → dapat `access_token`
+3. **Akses endpoint** → kirim token di header: `Authorization: Bearer <token>`
+4. **Token expired** → login ulang untuk dapat token baru
+
+### Auth Endpoints
+
+| Method | Endpoint | Deskripsi | Auth Required |
+|--------|----------|-----------|---------------|
+| POST | `/auth/register` | Daftar akun baru | ❌ Tidak |
+| POST | `/auth/login` | Login, dapat JWT token | ❌ Tidak |
+| GET | `/auth/me` | Profil user saat ini | ✅ Ya |
+
+> ⚠️ Semua endpoint `/items` (GET, POST, PUT, DELETE) membutuhkan token JWT valid.
+
+---
 
 ## 📄 Lisensi
 
