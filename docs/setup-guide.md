@@ -219,13 +219,3 @@ npm run dev
 | Frontend tidak bisa ambil data API | Backend mati / URL salah | Pastikan backend jalan; cek `VITE_API_URL` di `frontend/.env`. Restart `npm run dev` setelah mengubah `.env`. |
 | Error koneksi PostgreSQL | DB belum dibuat / password salah | Uji koneksi dengan psql atau pgAdmin; perbaiki string di `DATABASE_URL`. |
 | Port 8000 atau 5173 sudah dipakai | Aplikasi lain memakai port | Tutup proses tersebut atau ubah port (misalnya `uvicorn ... --port 8001` dan sesuaikan `VITE_API_URL`). |
-
----
-
-## 11. Setelah Modul 4 (auth / variabel tambahan)
-
-Jika tim menambah fitur JWT atau variabel baru di backend, **tambahkan** ke `backend/.env.example` dan dokumentasikan di sini baris yang wajib diisi (misalnya `SECRET_KEY`, `ALGORITHM`). Saat ini template resmi di repo hanya memuat `DATABASE_URL`; ikuti pembaruan `.env.example` di repository sebagai sumber kebenaran terbaru.
-
----
-
-*Dokumen ini disusun untuk memenuhi tugas Lead DevOps Modul 4 — panduan setup dari clone hingga aplikasi berjalan.*
