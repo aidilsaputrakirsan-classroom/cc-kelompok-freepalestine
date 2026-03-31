@@ -45,6 +45,8 @@ Dashboard mencakup visualisasi data revenue dari berbagai level: Regional, Witel
 
 ## 🚀 Getting Started
 
+Panduan setup lengkap dari clone hingga aplikasi berjalan (database, `.env`, troubleshooting): **[docs/setup-guide.md](docs/setup-guide.md)**.
+
 ### Prasyarat
 - Python 3.10+
 - Node.js 18+
@@ -81,10 +83,13 @@ cc-kelompok-freepalestine/
 │   ├── schemas.py           # Pydantic schemas (validasi request/response)
 │   ├── crud.py              # Fungsi CRUD (business logic)
 │   ├── requirements.txt     # Python dependencies
+│   ├── Dockerfile           # Image backend (non-root user)
+│   ├── .dockerignore        # File yang dikecualikan dari image
 │   ├── .env                 # Environment variables (TIDAK di-commit!)
 │   └── .env.example         # Template environment variables
 ├── frontend/                # React app (akan dibuat minggu 3)
 ├── docs/
+│   ├── setup-guide.md       # Panduan setup dari clone sampai running
 │   ├── api-test-results.md  # Hasil testing API
 │   ├── database-schema.md   # Schema database
 │   ├── member-ariel.md      # Info anggota
