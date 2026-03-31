@@ -9,6 +9,7 @@ from models import Base, Item, User
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
+    HealthResponse,
 )
 from auth import create_access_token, get_current_user
 import crud
@@ -39,7 +40,7 @@ app.add_middleware(
 
 # ==================== HEALTH CHECK ====================
 
-@app.get("/health")
+@app.get("/health", response_model=HealthResponse)
 def health_check():
     """Endpoint untuk Docker HEALTHCHECK dan monitoring."""
     return {
