@@ -3,14 +3,6 @@ from typing import Optional
 from datetime import datetime
 
 
-# === HEALTH CHECK SCHEMA ===
-class HealthResponse(BaseModel):
-    """Schema untuk response health check (Docker HEALTHCHECK)."""
-    status: str = Field(..., examples=["healthy"])
-    version: str = Field(..., examples=["0.5.0"])
-    environment: str = Field(..., examples=["container"])
-
-
 # === BASE SCHEMA ===
 class ItemBase(BaseModel):
     """Base schema — field yang dipakai untuk create & update."""

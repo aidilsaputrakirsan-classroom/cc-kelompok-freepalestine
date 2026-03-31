@@ -9,7 +9,6 @@ from models import Base, Item, User
 from schemas import (
     ItemCreate, ItemUpdate, ItemResponse, ItemListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
-    HealthResponse,
 )
 from auth import create_access_token, get_current_user
 import crud
@@ -22,7 +21,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Cloud App API",
     description="REST API untuk mata kuliah Komputasi Awan — SI ITK",
-    version="0.5.0",
+    version="0.4.0",
 )
 
 # ==================== CORS (FIXED) ====================
@@ -40,14 +39,9 @@ app.add_middleware(
 
 # ==================== HEALTH CHECK ====================
 
-@app.get("/health", response_model=HealthResponse)
+@app.get("/health")
 def health_check():
-    """Endpoint untuk Docker HEALTHCHECK dan monitoring."""
-    return {
-        "status": "healthy",
-        "version": "0.5.0",
-        "environment": "container" if os.path.exists("/.dockerenv") else "local",
-    }
+    return {"status": "healthy", "version": "0.4.0"}
 
 
 # ==================== AUTH ENDPOINTS (PUBLIC) ====================
