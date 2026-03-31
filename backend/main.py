@@ -21,7 +21,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI(
     title="Cloud App API",
     description="REST API untuk mata kuliah Komputasi Awan — SI ITK",
-    version="0.4.0",
+    version="0.5.0",
 )
 
 # ==================== CORS (FIXED) ====================
@@ -41,7 +41,12 @@ app.add_middleware(
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "version": "0.4.0"}
+    """Endpoint untuk Docker HEALTHCHECK dan monitoring."""
+    return {
+        "status": "healthy",
+        "version": "0.5.0",
+        "environment": "container" if os.path.exists("/.dockerenv") else "local",
+    }
 
 
 # ==================== AUTH ENDPOINTS (PUBLIC) ====================
