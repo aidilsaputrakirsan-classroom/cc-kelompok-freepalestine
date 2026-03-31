@@ -9,7 +9,7 @@ Dashboard mencakup visualisasi data revenue dari berbagai level: Regional, Witel
 | Nama | NIM | Peran |
 |------|-----|-------|
 | Ariel Itsbat Nurhaq | 10231018 | Lead Backend & Lead Frontend |
-| Raditya Yudianto | 10231076 | Lead QA & Docs |
+| Raditya Yudianto | 10231076 | Lead QA & Docs \| Lead Frontend |
 | Muhammad Khoiruddin Marzuq | 10231065 | Lead DevOps |
 
 ## 🛠️ Tech Stack
@@ -273,6 +273,56 @@ Aplikasi menggunakan **JWT (JSON Web Token)** untuk autentikasi. Semua endpoint 
 | GET | `/auth/me` | Profil user saat ini | ✅ Ya |
 
 > ⚠️ Semua endpoint `/items` (GET, POST, PUT, DELETE) membutuhkan token JWT valid.
+
+---
+
+## 🐳 Docker
+
+Backend sudah dikontainerisasi menggunakan Docker (Modul 5).
+
+### Prasyarat
+- Docker Desktop terinstall dan berjalan
+- File `backend/.env` sudah dikonfigurasi
+
+### Menjalankan Backend dengan Docker
+
+```bash
+# 1. Build image
+cd backend
+docker build -t cloudapp-backend:v1 .
+
+# 2. Jalankan container
+docker run -d \
+  -p 8000:8000 \
+  --env-file .env \
+  --name backend \
+  cloudapp-backend:v1
+
+# 3. Cek container berjalan
+docker ps
+docker logs backend
+
+# 4. Test API
+# Buka http://localhost:8000/health
+```
+
+### Konfigurasi Database untuk Docker
+
+Karena container tidak bisa akses `localhost` host machine secara langsung, update `DATABASE_URL` di `.env`:
+
+```bash
+# Untuk Windows/Mac (Docker Desktop)
+DATABASE_URL=postgresql://postgres:PASSWORD@host.docker.internal:5432/cloudapp
+```
+
+### Base Image
+
+Menggunakan `python:3.12-slim` (~150 MB) — 7x lebih kecil dari `python:3.12` full (~1 GB).
+Lihat perbandingan lengkap: [docs/image-comparison.md](docs/image-comparison.md)
+
+### Docker Commands Reference
+
+Lihat [docs/docker-cheatsheet.md](docs/docker-cheatsheet.md) untuk referensi lengkap semua Docker commands yang digunakan dalam proyek ini.
 
 ---
 
