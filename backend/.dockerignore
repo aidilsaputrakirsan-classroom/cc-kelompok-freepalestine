@@ -1,28 +1,46 @@
-# Secrets & local env (never bake into image)
+# ============================================================
+# Docker Ignore — Backend
+# ============================================================
+# File/folder yang TIDAK perlu masuk ke Docker image
+# Tujuan: keamanan (.env), ukuran (cache), kecepatan build
+
+# Secrets & local env (JANGAN masuk ke image!)
 .env
 .env.*
 
-# Python
+# Python cache & bytecode
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-venv/
-.venv/
 *.egg-info/
 .eggs/
 dist/
 build/
 
+# Virtual environment
+venv/
+.venv/
+env/
+
 # Git & IDE
-.git
+.git/
 .gitignore
 .idea/
 .vscode/
 
-# Tests & misc
+# Testing
+tests/
+*.test.py
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Documentation (tidak diperlukan di runtime)
 *.md
+docs/
+
+# Docker files sendiri
+Dockerfile
+.dockerignore
