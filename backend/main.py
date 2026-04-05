@@ -175,6 +175,10 @@ def delete_item(
 
 @app.get("/team")
 def team_info():
+    """
+    Informasi tim proyek. Pastikan jumlah anggota & data selaras dengan README.md
+    dan ketentuan RPS (minimum anggota terdaftar).
+    """
     return {
         "team": "cloud-team-freepalestine",
         "project": "Dashboard Revenue Telkom Regional 4 Kalimantan",
