@@ -47,6 +47,11 @@ Aplikasi FastAPI dijalankan di local server:
 ```bash
 uvicorn main:app --reload --port 8000
 ```
+
+| Terminal Output | Browser Output |
+| :---: | :---: |
+| ![Terminal Backend](./screenshots/modul1-terminal-backend.png.png) | ![Browser Backend](./screenshots/modul1-browser-backend.png.png) |
+
 Saat diakses melalui `http://localhost:8000/health`, server berhasil merespons dengan JSON status: `{"status": "ok", "message": "API Dashboard Telkom berjalan dengan baik"}`.
 
 ### B. Frontend (React + Vite) - Setup & Run
@@ -66,3 +71,7 @@ npm run dev
 
 **Verifikasi "Hello World":**
 Aplikasi React berjalan di port default Vite `http://localhost:5173/`. Halaman berhasil merender komponen utama proyek.
+
+| Tampilan Frontend |
+| :---: |
+| ![Frontend UI](./screenshots/modul1-UI-frontend.png) |

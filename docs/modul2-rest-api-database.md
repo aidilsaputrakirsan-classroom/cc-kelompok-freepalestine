@@ -54,3 +54,7 @@ Proses bisnis (CRUD) di-handle oleh library Pydantic (`schemas.py`) untuk valida
 
 ## 🧪 Validasi Uji Coba API
 Seluruh Endpoint di atas telah diuji cobakan menggunakan fasilitas **Swagger UI** (Docs bawaan FastAPI) yang berjalan secara interaktif di `http://localhost:8000/docs`. Swagger me-render otomatis dokumentasi Pydantic Schema model sehingga QA dan pengembang Frontend dapata mengetahui struktur Response Body JSON secara jelas.
+
+| Tampilan Pengujian via Swagger UI |
+| :---: |
+| ![Swagger API](./screenshots/modul2-swagger-api.png.png) |
