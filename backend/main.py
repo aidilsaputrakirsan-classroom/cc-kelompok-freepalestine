@@ -23,7 +23,7 @@ from upload import parse_file, map_sales_rows, map_inbox_rows
 
 load_dotenv()
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Dashboard Telkom API",
