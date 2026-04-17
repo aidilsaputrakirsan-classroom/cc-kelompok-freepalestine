@@ -1,21 +1,38 @@
-# Backend Cloud App — FastAPI + Uvicorn
-# Base image ringan; layer pip di-cache saat requirements tidak berubah
-FROM python:3.12-slim
+# ============================================================
+# Stage 1: Builder — install dependency ke virtualenv
+# ============================================================
+FROM python:3.12-alpine AS builder
 
 WORKDIR /app
 
-# Dependency layer (cache-friendly)
 COPY requirements.txt .
+
+# Simpan semua dependency di venv agar bisa dicopy ke image final
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install curl untuk healthcheck (harus sebelum USER non-root)
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-# Application code
+# ============================================================
+# Stage 2: Runtime — hanya venv + source code aplikasi
+# ============================================================
+FROM python:3.12-alpine
+
+WORKDIR /app
+
+# Runtime package minimum untuk healthcheck
+RUN apk add --no-cache curl
+
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
 COPY . .
 
 # Non-root user (security best practice)
-RUN useradd -m appuser && chown -R appuser:appuser /app
+RUN addgroup -S appuser \
+    && adduser -S appuser -G appuser \
+    && chown -R appuser:appuser /app
 USER appuser
 
 EXPOSE 8000

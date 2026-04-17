@@ -57,5 +57,3 @@ Sesuai catatan penilaian: minimum **4 anggota** per RPS — jika ada anggota ke-
 | 5 | `Dockerfile`, `.dockerignore`, bagian Docker di `setup-guide.md` |
 
 ---
-
-*Dokumen ini dapat dilampirkan saat pengajuan revisi penilaian agar artefak DevOps terlihat eksplisit.*
