@@ -1,59 +1,107 @@
-# Artefak Lead DevOps — cc-kelompok-freepalestine
+# Artefak Lead CI/CD — Modul 6 & 7
 
-Dokumen ini memetakan **deliverable DevOps** di repository agar penilaian dan revisi dapat diverifikasi dari kode dan dokumentasi.
-
-**Penanggung jawab peran:** Muhammad Khoiruddin Marzuq (10231065) — Lead DevOps.
+Dokumen ini memetakan deliverable yang dikerjakan dari perspektif **Lead CI/CD** untuk tugas pada Modul 6 (multi-stage + image publish) dan Modul 7 (Docker Compose + release workflow).
 
 ---
 
-## 1. Ringkasan artefak
+## 1) Deliverable yang disiapkan
 
-| Artefak | Lokasi | Fungsi |
-|---------|--------|--------|
-| Template env backend | `backend/.env.example` | Variabel wajib: `DATABASE_URL`, JWT, `ALLOWED_ORIGINS`; catatan Docker (`host.docker.internal`) |
-| Template env frontend | `frontend/.env.example` | `VITE_API_URL` untuk base URL API |
-| Pengabaian secret di Git | `.gitignore` (root) | `.env` tidak ikut commit |
-| Script setup otomatis | `setup.sh` | Install Python deps, salin `.env` backend & frontend dari example, `npm install` |
-| Panduan setup lengkap | `docs/setup-guide.md` | Clone → PostgreSQL → konfigurasi env → jalankan backend & frontend → troubleshooting → Docker backend |
-| Image container backend | `backend/Dockerfile` | Python 3.12-slim, layer cache-friendly, **non-root user** (`appuser`) |
-| Build context bersih | `backend/.dockerignore` | Mengecualikan `.env`, cache, venv, `.git` dari image |
+| Deliverable | File | Keterkaitan modul |
+|-------------|------|-------------------|
+| Compose orchestration 3 service (`db`, `backend`, `frontend`) | `docker-compose.yml` | Modul 7 |
+| Template env untuk compose | `.env.docker.example` | Modul 7 |
+| Shortcut command compose wajib (`up/down/build/logs/ps/clean`) | `Makefile` | Modul 7 |
+| Target release image (build/tag/push + `latest`) | `Makefile` (`images-build`, `images-tag`, `images-push`, `release-images`) | Modul 6 + 7 |
+| Script publish image ke Docker Hub | `scripts/push-images.sh` | Modul 6 + 7 |
+| Multi-stage frontend runtime image (Node -> Nginx) | `frontend/Dockerfile` | Modul 6 |
+| Bukti perbandingan/ukuran image | `docs/image-comparison.md` | Modul 6 |
 
 ---
 
-## 2. Verifikasi cepat
-
-**Lokal (tanpa Docker)**
-
-1. Ikuti [setup-guide.md](setup-guide.md).
-2. Backend: `GET http://localhost:8000/health`
-3. Frontend: dev server Vite (biasanya port 5173).
-
-**Docker (backend)**
+## 2) Validasi teknis yang sudah dicek
 
 ```bash
-cd backend
-docker build -t cloudapp-backend:local .
-docker run --rm -p 8000:8000 --env-file .env cloudapp-backend:local
+docker compose --env-file .env.docker.example config
 ```
 
-Pastikan `DATABASE_URL` di `.env` untuk container memakai host yang bisa dijangkau dari container (mis. `host.docker.internal` pada Docker Desktop).
+Hasil: **valid** (render service `db`, `backend`, `frontend`, network, volume, healthcheck).
+
+```bash
+docker images
+```
+
+Cuplikan image proyek yang terdeteksi:
+- `cloudapp-backend:v2` -> sekitar `208MB`
+- `cloudapp-backend:latest` -> sekitar `208MB`
+- `cloudapp-frontend:latest` -> sekitar `73.9MB`
+- `postgres:16-alpine` -> sekitar `395MB` (shared layers Docker lokal)
+
+> Catatan: ukuran `docker images` pada host bisa berbeda antar mesin karena layer sharing dan cache lokal.
 
 ---
 
-## 3. Sinkronisasi dengan endpoint `/team` dan README
+## 3) Workflow rilis image (Lead CI/CD)
 
-Data anggota di **`README.md`** dan **`GET /team`** (`backend/main.py`) harus **konsisten**.  
-Sesuai catatan penilaian: minimum **4 anggota** per RPS — jika ada anggota ke-4 resmi (NIM + nama), tambahkan ke kedua tempat tersebut dan ke dokumen tim.
+### Opsi A: Pakai Makefile
+
+```bash
+# Build image lokal
+make images-build
+
+# Tag ke Docker Hub (versi + latest)
+make images-tag DOCKERHUB_USERNAME=<username-dockerhub>
+
+# Push semua tag
+make images-push DOCKERHUB_USERNAME=<username-dockerhub>
+```
+
+Atau satu command:
+
+```bash
+make release-images DOCKERHUB_USERNAME=<username-dockerhub>
+```
+
+### Opsi B: Pakai script helper
+
+```bash
+DOCKERHUB_USERNAME=<username-dockerhub> sh scripts/push-images.sh
+```
+
+Tag yang di-push:
+- Backend: `cloudapp-backend:v2` dan `cloudapp-backend:latest`
+- Frontend: `cloudapp-frontend:v1` dan `cloudapp-frontend:latest`
 
 ---
 
-## 4. Riwayat modul (referensi kurikulum)
+## 4) Checklist tugas modul untuk peran Lead CI/CD
 
-| Modul | Kaitan DevOps |
-|-------|----------------|
-| 2 | `backend/.env.example`, `.gitignore`, `setup.sh` |
-| 3 | `frontend/.env.example`, pengecekan `frontend/.env` di `setup.sh`, `VITE_API_URL` |
-| 4 | Dokumentasi env (JWT, CORS) di `setup-guide.md` dan `.env.example` |
-| 5 | `Dockerfile`, `.dockerignore`, bagian Docker di `setup-guide.md` |
+- [x] Menyiapkan command workflow standar Compose (Modul 7)
+- [x] Menambahkan automation publish image (Modul 6/7)
+- [x] Menyediakan tagging versi + `latest` (Modul 7)
+- [x] Mendokumentasikan nama image dan ukuran (Modul 6)
+- [x] Push final ke Docker Hub akun tim (`mukhoma`)
+
+---
+
+## 5) Bukti push Docker Hub (akun `mukhoma`)
+
+Perintah yang dieksekusi:
+
+```bash
+DOCKERHUB_USERNAME=mukhoma sh scripts/push-images.sh
+```
+
+Output akhir:
+- `Backend : mukhoma/cloudapp-backend:v2 dan :latest`
+- `Frontend: mukhoma/cloudapp-frontend:v1 dan :latest`
+
+Verifikasi registry:
+
+```bash
+docker manifest inspect mukhoma/cloudapp-backend:v2
+docker manifest inspect mukhoma/cloudapp-frontend:v1
+```
+
+Kedua perintah berhasil (manifest ditemukan di Docker Hub).
 
 ---

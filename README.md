@@ -87,7 +87,13 @@ cc-kelompok-freepalestine/
 │   ├── .dockerignore        # File yang dikecualikan dari image
 │   ├── .env                 # Environment variables (TIDAK di-commit!)
 │   └── .env.example         # Template environment variables
-├── frontend/                # React app (akan dibuat minggu 3)
+├── frontend/
+│   ├── src/                 # React app (Vite)
+│   ├── Dockerfile           # Multi-stage build frontend (Node -> Nginx)
+│   └── .env.example         # Template environment frontend
+├── docker-compose.yml       # Orkestrasi frontend + backend + db
+├── Makefile                 # Shortcut perintah Docker Compose
+├── .env.docker.example      # Template env untuk docker compose
 ├── docs/
 │   ├── setup-guide.md       # Panduan setup dari clone sampai running
 │   ├── api-test-results.md  # Hasil testing API
@@ -108,7 +114,7 @@ cc-kelompok-freepalestine/
 | 2 | REST API + Database | ✅ |
 | 3 | React Frontend | ✅ |
 | 4 | Full-Stack Integration | ✅ |
-| 5-7 | Docker & Compose | ⬜ |
+| 5-7 | Docker & Compose | ✅ |
 | 8 | UTS Demo | ⬜ |
 | 9-11 | CI/CD Pipeline | ⬜ |
 | 12-14 | Microservices | ⬜ |
@@ -278,47 +284,96 @@ Aplikasi menggunakan **JWT (JSON Web Token)** untuk autentikasi. Semua endpoint 
 
 ## 🐳 Docker
 
-Backend sudah dikontainerisasi menggunakan Docker (Modul 5).
+Stack full aplikasi sudah dikontainerisasi dengan Docker Compose (Modul 7): `frontend`, `backend`, dan `db`.
 
 ### Prasyarat
 - Docker Desktop terinstall dan berjalan
-- File `backend/.env` sudah dikonfigurasi
+- File `.env.docker` tersedia (copy dari `.env.docker.example`)
 
-### Menjalankan Backend dengan Docker
+### Menjalankan Full Stack dengan Docker Compose
 
 ```bash
-# 1. Build image
-cd backend
-docker build -t cloudapp-backend:v1 .
+# Siapkan env khusus compose (sekali saja)
+cp .env.docker.example .env.docker
 
-# 2. Jalankan container
-docker run -d \
-  -p 8000:8000 \
-  --env-file .env \
-  --name backend \
-  cloudapp-backend:v1
+# Build + start semua services
+docker compose --env-file .env.docker up --build -d
 
-# 3. Cek container berjalan
-docker ps
-docker logs backend
+# Cek status
+docker compose --env-file .env.docker ps
 
-# 4. Test API
-# Buka http://localhost:8000/health
+# Lihat logs
+docker compose --env-file .env.docker logs -f
 ```
 
-### Konfigurasi Database untuk Docker
+Service URL default:
 
-Karena container tidak bisa akses `localhost` host machine secara langsung, update `DATABASE_URL` di `.env`:
+- Frontend: `http://localhost:3000`
+- Backend API: `http://localhost:8000`
+- Swagger: `http://localhost:8000/docs`
+- PostgreSQL host port: `localhost:5433`
+
+Jika ada port yang bentrok, override sebelum menjalankan compose:
 
 ```bash
-# Untuk Windows/Mac (Docker Desktop)
-DATABASE_URL=postgresql://postgres:PASSWORD@host.docker.internal:5432/cloudapp
+BACKEND_PORT=8001 FRONTEND_PORT=3001 DB_PORT=5434 docker compose up -d
+```
+
+Atau ubah nilainya permanen di file `.env.docker`.
+
+### Shortcut dengan Makefile
+
+```bash
+make up           # Start semua services
+make build        # Rebuild lalu start
+make ps           # Status services
+make logs         # Logs semua service
+make logs-backend # Logs backend saja
+make down         # Stop dan remove containers
+make clean        # Down + hapus volume + prune (data lokal hilang)
+make compose-config # Validasi docker-compose.yml
+```
+
+Jika `make` belum terpasang di Windows, gunakan command Compose langsung:
+
+```bash
+docker compose --env-file .env.docker up -d
+docker compose --env-file .env.docker ps
+docker compose --env-file .env.docker logs -f
+docker compose --env-file .env.docker down
+```
+
+### Release image ke Docker Hub (Lead CI/CD)
+
+```bash
+# Build image lokal backend+frontend
+make images-build
+
+# Tag image versi + latest
+make images-tag DOCKERHUB_USERNAME=<username-dockerhub>
+
+# Push ke Docker Hub
+make images-push DOCKERHUB_USERNAME=<username-dockerhub>
+```
+
+Atau satu langkah:
+
+```bash
+make release-images DOCKERHUB_USERNAME=<username-dockerhub>
+```
+
+Alternatif tanpa `make`:
+
+```bash
+DOCKERHUB_USERNAME=<username-dockerhub> sh scripts/push-images.sh
 ```
 
 ### Base Image
 
-Menggunakan `python:3.12-slim` (~150 MB) — 7x lebih kecil dari `python:3.12` full (~1 GB).
+Backend menggunakan `python:3.12-alpine` dengan multi-stage build dan user non-root.  
+Frontend menggunakan multi-stage build (`node:20-alpine` -> `nginx:alpine`).
 Lihat perbandingan lengkap: [docs/image-comparison.md](docs/image-comparison.md)
+Rangkuman deliverable modul 6-7 (peran CI/CD): [docs/devops-artifacts.md](docs/devops-artifacts.md)
 
 ### Docker Commands Reference
 
