@@ -1,0 +1,18 @@
+[33m3b5ce9c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m docs: add UI test results for Modul 3
+[33m3fb1de2[m update modul 3 by irud
+[33md7e64f0[m Merge branch 'main' of github.com:aidilsaputrakirsan-classroom/cc-kelompok-freepalestine
+[33mb541fee[m feat: add React CRUD frontend with component architecture
+[33m06beda9[m Update tugas modul 2: Buat file backend/.env.example yang lengkap
+[33ma7a3c3e[m Merge branch 'main' of github.com:aidilsaputrakirsan-classroom/cc-kelompok-freepalestine
+[33m429d4ac[m feat: lengkapi tugas Modul 2  endpoint stats, dokumentasi, dan testing
+[33m5b776cf[m docs: add API endpoints documentation to README
+[33m1afffda[m Revert "docs: add Swagger UI screenshots to API test results"
+[33m13a00ec[m docs: add Swagger UI screenshots to API test results
+[33mc20ff3a[m feat: add REST API CRUD with PostgreSQL integration
+[33m429394a[m docs: add member info - Radit
+[33m6fef4dd[m docs: add member info - Irud
+[33m73712ee[m docs: add project README with architecture and team info
+[33m5a2b04e[m feat: add React frontend with API integration
+[33m5d173bb[m feat: add FastAPI backend with health check and team endpoint
+[33mf25c73b[m docs: add member info - Ariel
+[33md63312e[m chore: initial project structure
