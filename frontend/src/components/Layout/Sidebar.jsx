@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard, TrendingUp, HeartPulse, Trophy,
-    Upload, ShieldCheck,
+    Upload, ShieldCheck, Info,
 } from 'lucide-react';
 
 const menuSections = [
@@ -19,6 +19,12 @@ const menuSections = [
         items: [
             { path: '/upload', icon: Upload, label: 'Upload Data Source' },
             { path: '/users', icon: ShieldCheck, label: 'User & Audit Log', adminOnly: true },
+        ],
+    },
+    {
+        title: 'Info',
+        items: [
+            { path: '/about', icon: Info, label: 'About Project' },
         ],
     },
 ];

@@ -10,6 +10,7 @@ import CustomerCarePage from './pages/CustomerCare/CustomerCarePage';
 import LeaderboardPage from './pages/Leaderboard/LeaderboardPage';
 import UploadPage from './pages/Upload/UploadPage';
 import UsersPage from './pages/Users/UsersPage';
+import AboutPage from './pages/About/AboutPage';
 import './index.css';
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
@@ -71,6 +72,7 @@ function App() {
                         <Route path="leaderboard" element={<LeaderboardPage />} />
                         <Route path="upload" element={<UploadPage />} />
                         <Route path="users" element={<UsersPage />} />
+                        <Route path="about" element={<AboutPage />} />
                         <Route path="*" element={<Navigate to="/" replace />} />
                     </Route>
                 </Routes>
