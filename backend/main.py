@@ -176,10 +176,12 @@ def create_inbox(data: InboxCreate, db: Session = Depends(get_db), current_user:
 def list_inbox(skip: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=10000),
                status: str = Query(None), priority: str = Query(None),
                witel: str = Query(None), search: str = Query(None),
+               category: str = Query(None, description="Filter tiket berdasarkan kategori (mis. 'network', 'billing')"),
                datasource_id: int = Query(None),
                db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return crud.get_inbox_list(db=db, skip=skip, limit=limit, status=status,
-                               priority=priority, witel=witel, search=search, datasource_id=datasource_id)
+                               priority=priority, witel=witel, search=search,
+                               category=category, datasource_id=datasource_id)
 
 @app.get("/inbox/stats")
 def inbox_stats(witel: str = Query(None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
