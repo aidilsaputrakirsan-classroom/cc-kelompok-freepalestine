@@ -173,6 +173,46 @@ pip install pytest httpx
 pytest test_main.py -v
 ```
 
+## 🔀 Git Workflow & PR
+
+Modul 09 menggunakan **GitHub Flow**:
+
+- Branch per perubahan: `feature/*`, `fix/*`, `docs/*`, `chore/*`
+- Commit mengikuti Conventional Commits
+- PR wajib review minimal 1 orang
+- Merge strategy default: **Squash and Merge**
+
+File governance yang dipakai:
+
+- `.github/CODEOWNERS` untuk auto-assign reviewer
+- `.github/pull_request_template.md` untuk standarisasi deskripsi PR
+- `docs/git-workflow.md` sebagai panduan detail workflow tim
+- `docs/modul09-verification.md` sebagai checklist verifikasi final Modul 09
+
+## 🧰 DevOps & CI Commands
+
+Gunakan target berikut sebelum merge PR:
+
+```bash
+make lint      # Frontend lint + backend syntax check
+make test      # Backend pytest
+make pr-check  # Compose config + build + lint + test
+```
+
+Jika `make` belum tersedia di Windows, gunakan alternatif berikut:
+
+```bash
+npm --prefix frontend run lint
+python -m compileall -q backend
+pytest backend/test_main.py -v
+```
+
+Untuk production compose override:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
+
 ## 📊 Modul Coverage
 
 | Week | Topik | Status |

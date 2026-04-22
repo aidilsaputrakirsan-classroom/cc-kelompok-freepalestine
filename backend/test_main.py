@@ -8,7 +8,8 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 import os
-os.environ["DATABASE_URL"] = os.getenv("DATABASE_URL", "postgresql://postgres:postgres123@localhost:5432/telkom_test")
+# Pakai SQLite khusus test agar tidak bergantung credential PostgreSQL lokal.
+os.environ["DATABASE_URL"] = "sqlite:///./test_temp.db"
 os.environ["SECRET_KEY"] = "test-secret-key-for-ci-pipeline-minimum-32"
 
 from main import app

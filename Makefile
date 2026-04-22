@@ -1,5 +1,6 @@
 .PHONY: help up down build logs ps clean restart logs-backend shell-backend shell-db \
-        compose-config images-build images-tag images-push release-images show-image-sizes
+        compose-config images-build images-tag images-push release-images show-image-sizes \
+        lint test pr-check
 
 # Gunakan .env.docker jika ada, fallback ke template agar command tetap bisa dijalankan.
 ENV_FILE ?= $(if $(wildcard .env.docker),.env.docker,.env.docker.example)
@@ -37,6 +38,11 @@ help:
 	@echo "  make images-push    # Push tag version + latest"
 	@echo "  make release-images # Build + tag + push (pipeline ringkas)"
 	@echo "  make show-image-sizes # Lihat ukuran image cloudapp"
+	@echo ""
+	@echo "PR validation targets:"
+	@echo "  make lint           # Lint frontend + cek sintaks backend"
+	@echo "  make test           # Jalankan backend test suite (pytest)"
+	@echo "  make pr-check       # Compose config + build image + lint + test"
 	@echo ""
 	@echo "Debug targets:"
 	@echo "  make shell-backend  # Masuk shell backend"
@@ -106,3 +112,12 @@ release-images: images-build images-tag images-push
 
 show-image-sizes:
 	docker images | (grep cloudapp || true)
+
+lint:
+	npm --prefix frontend run lint
+	python -m compileall -q backend
+
+test:
+	cd backend && pytest test_main.py -v
+
+pr-check: compose-config build lint test

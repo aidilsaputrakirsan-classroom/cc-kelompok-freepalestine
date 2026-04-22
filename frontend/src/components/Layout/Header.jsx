@@ -19,12 +19,22 @@ export default function Header({ toggleSidebar }) {
     const notifRef = useRef(null);
     const profileRef = useRef(null);
 
+    async function loadNotifications() {
+        try {
+            const data = await notificationApi.list();
+            setNotifications(Array.isArray(data) ? data : []);
+        } catch {
+            // silent
+        }
+    }
+
     useEffect(() => {
         document.documentElement.dataset.theme = isDark ? 'dark' : 'light';
         localStorage.setItem('theme', isDark ? 'dark' : 'light');
     }, [isDark]);
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         loadNotifications();
         const timer = setInterval(loadNotifications, 60_000);
         return () => clearInterval(timer);
@@ -38,15 +48,6 @@ export default function Header({ toggleSidebar }) {
         document.addEventListener('mousedown', handler);
         return () => document.removeEventListener('mousedown', handler);
     }, []);
-
-    const loadNotifications = async () => {
-        try {
-            const data = await notificationApi.list();
-            setNotifications(Array.isArray(data) ? data : []);
-        } catch {
-            // silent
-        }
-    };
 
     const doLogout = () => {
         localStorage.removeItem('access_token');

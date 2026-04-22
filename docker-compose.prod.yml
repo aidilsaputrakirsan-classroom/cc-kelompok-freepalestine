@@ -1,0 +1,17 @@
+# Production override for docker compose.
+# Usage:
+# docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+services:
+  db:
+    restart: always
+    # Jangan expose database ke host pada production.
+    ports: []
+
+  backend:
+    restart: always
+    environment:
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+
+  frontend:
+    restart: always
