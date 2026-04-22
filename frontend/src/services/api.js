@@ -1,119 +1,109 @@
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000"
+import axios from 'axios';
 
-// ==================== TOKEN MANAGEMENT ====================
+// Base API client — endpoint mengarah ke FastAPI backend
+const api = axios.create({
+    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8000',
+    headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    },
+    timeout: 30000,
+});
 
-let authToken = null
+// Request interceptor — sisipkan JWT token
+api.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('access_token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
-export function setToken(token) {
-  authToken = token
-}
-
-export function getToken() {
-  return authToken
-}
-
-export function clearToken() {
-  authToken = null
-}
-
-function authHeaders() {
-  const headers = { "Content-Type": "application/json" }
-  if (authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`
-  }
-  return headers
-}
-
-// Helper: handle response errors
-async function handleResponse(response) {
-  if (response.status === 401) {
-    clearToken()
-    throw new Error("UNAUTHORIZED")
-  }
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}))
-    throw new Error(error.detail || `Request gagal (${response.status})`)
-  }
-  // 204 No Content
-  if (response.status === 204) return null
-  return response.json()
-}
+// Response interceptor — handle 401 redirect
+api.interceptors.response.use(
+    (response) => response.data,
+    (error) => {
+        if (error.response) {
+            if (error.response.status === 401) {
+                localStorage.removeItem('access_token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
 
 // ==================== AUTH API ====================
+export const authApi = {
+    register: (data) => api.post('/auth/register', data),
+    login: (data) => api.post('/auth/login', data),
+    getMe: () => api.get('/auth/me'),
+    changePassword: (data) => api.put('/auth/change-password', data),
+};
 
-export async function register(userData) {
-  const response = await fetch(`${API_URL}/auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(userData),
-  })
-  return handleResponse(response)
-}
+// ==================== SALES API ====================
+export const salesApi = {
+    list: (params) => api.get('/sales', { params }),
+    get: (id) => api.get(`/sales/${id}`),
+    create: (data) => api.post('/sales', data),
+    update: (id, data) => api.put(`/sales/${id}`, data),
+    delete: (id) => api.delete(`/sales/${id}`),
+    summary: (params) => api.get('/sales/summary', { params }),
+    monthly: (params) => api.get('/sales/monthly', { params }),
+    byTelda: (params) => api.get('/sales/by-telda', { params }),
+    trend: (params) => api.get('/sales/trend', { params }),
+};
 
-export async function login(email, password) {
-  const response = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  })
-  const data = await handleResponse(response)
-  setToken(data.access_token)
-  return data
-}
+// ==================== INBOX API ====================
+export const inboxApi = {
+    list: (params) => api.get('/inbox', { params }),
+    get: (id) => api.get(`/inbox/${id}`),
+    create: (data) => api.post('/inbox', data),
+    update: (id, data) => api.put(`/inbox/${id}`, data),
+    delete: (id) => api.delete(`/inbox/${id}`),
+    stats: (params) => api.get('/inbox/stats', { params }),
+};
 
-export async function getMe() {
-  const response = await fetch(`${API_URL}/auth/me`, {
-    headers: authHeaders(),
-  })
-  return handleResponse(response)
-}
+// ==================== LEADERBOARD API ====================
+export const leaderboardApi = {
+    get: (params) => api.get('/leaderboard', { params }),
+};
 
-// ==================== ITEMS API ====================
+// ==================== USER MANAGEMENT (ADMIN) ====================
+export const userApi = {
+    list: () => api.get('/users'),
+    create: (data) => api.post('/users', data),
+    update: (id, data) => api.put(`/users/${id}`, data),
+    delete: (id) => api.delete(`/users/${id}`),
+};
 
-export async function fetchItems(search = "", skip = 0, limit = 20) {
-  const params = new URLSearchParams()
-  if (search) params.append("search", search)
-  params.append("skip", skip)
-  params.append("limit", limit)
+// ==================== AUDIT LOG ====================
+export const auditApi = {
+    list: (params) => api.get('/audit-logs', { params }),
+};
 
-  const response = await fetch(`${API_URL}/items?${params}`, {
-    headers: authHeaders(),
-  })
-  return handleResponse(response)
-}
+// ==================== UPLOAD / DATASOURCE ====================
+export const uploadApi = {
+    salesFile: (formData) =>
+        api.post('/upload/sales', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    inboxFile: (formData) =>
+        api.post('/upload/inbox', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    listDatasources: (params) => api.get('/datasources', { params }),
+    deleteDatasource: (id) => api.delete(`/datasources/${id}`),
+};
 
-export async function createItem(itemData) {
-  const response = await fetch(`${API_URL}/items`, {
-    method: "POST",
-    headers: authHeaders(),
-    body: JSON.stringify(itemData),
-  })
-  return handleResponse(response)
-}
+// ==================== NOTIFICATIONS ====================
+export const notificationApi = {
+    list: (params) => api.get('/notifications', { params }),
+};
 
-export async function updateItem(id, itemData) {
-  const response = await fetch(`${API_URL}/items/${id}`, {
-    method: "PUT",
-    headers: authHeaders(),
-    body: JSON.stringify(itemData),
-  })
-  return handleResponse(response)
-}
+// ==================== MONITORING ====================
+export const monitoringApi = {
+    summary: () => api.get('/monitoring/summary'),
+};
 
-export async function deleteItem(id) {
-  const response = await fetch(`${API_URL}/items/${id}`, {
-    method: "DELETE",
-    headers: authHeaders(),
-  })
-  return handleResponse(response)
-}
-
-export async function checkHealth() {
-  try {
-    const response = await fetch(`${API_URL}/health`)
-    const data = await response.json()
-    return data.status === "healthy"
-  } catch {
-    return false
-  }
-}
+export default api;

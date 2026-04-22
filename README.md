@@ -1,386 +1,191 @@
-# ☁️ Dashboard Revenue Telkom Regional 4 Kalimantan
+# 🏢 Dashboard Telkom Regional 4 Kalimantan
 
-Dashboard Revenue adalah aplikasi web full-stack untuk memvisualisasikan dan mengelola data revenue unit Regional Small Medium Enterprise Service (SMES) Telkom Regional 4 Kalimantan. Aplikasi ini menggantikan proses input dan visualisasi data yang sebelumnya dilakukan secara manual menggunakan Excel, menjadi dashboard digital yang interaktif dan real-time.
+**Tugas Besar Mata Kuliah Cloud Computing — Sistem Informasi ITK**
 
-Dashboard mencakup visualisasi data revenue dari berbagai level: Regional, Witel, Telda, Account Manager (AM), Prognosa, dan NGTMA — dengan fitur realisasi, trend, dan laporan bulanan.
+Dashboard monitoring revenue dan operasional Telkom Regional 4 Kalimantan, dibangun menggunakan arsitektur cloud-native microservices dengan FastAPI, React, PostgreSQL, Docker, dan CI/CD.
 
-## 👥 Tim
+## 👥 Tim: Free Palestine
 
-| Nama | NIM | Peran |
-|------|-----|-------|
+| Nama | NIM | Role |
+|------|-----|------|
 | Ariel Itsbat Nurhaq | 10231018 | Lead Backend & Lead Frontend |
-| Raditya Yudianto | 10231076 | Lead QA & Docs \| Lead Frontend |
+| Raditya Yudianto | 10231076 | Lead QA & Docs |
 | Muhammad Khoiruddin Marzuq | 10231065 | Lead DevOps |
 
 ## 🛠️ Tech Stack
 
-| Teknologi | Fungsi |
-|-----------|--------|
-| FastAPI (Python) | Backend REST API |
-| React + Vite | Frontend SPA |
-| PostgreSQL | Database |
-| Docker | Containerization |
-| GitHub Actions | CI/CD Pipeline |
-| Railway/Render | Cloud Deployment |
+| Layer | Teknologi |
+|-------|-----------|
+| **Backend** | Python 3.12, FastAPI, SQLAlchemy, PostgreSQL |
+| **Frontend** | React 19, Vite, Recharts, Axios, Lucide React |
+| **Auth** | JWT (python-jose + bcrypt) |
+| **Gateway** | Nginx (reverse proxy + rate limiting) |
+| **Container** | Docker, Docker Compose |
+| **CI/CD** | GitHub Actions → Railway |
+| **Reliability** | Circuit Breaker, Retry with Exponential Backoff |
+| **Observability** | Structured JSON Logging, Correlation IDs, Metrics |
+| **Security** | Rate Limiting, Security Headers, Input Validation |
 
-## 🏗️ Architecture
+## 🏗️ Arsitektur
 
 ```
-[React Frontend] <--HTTP--> [FastAPI Backend] <--SQL--> [PostgreSQL]
+                    ┌─────────────┐
+     Browser  ───── │  Frontend   │ :3000
+                    │  (React)    │
+                    └──────┬──────┘
+                           │
+                    ┌──────┴──────┐
+                    │   Gateway   │ :8080
+                    │  (Nginx)    │
+                    └──┬──────┬───┘
+                       │      │
+              ┌────────┘      └────────┐
+              │                        │
+       ┌──────┴──────┐         ┌──────┴──────┐
+       │ Auth Service │         │  Dashboard  │
+       │   :8001      │         │  Service    │
+       └──────┬──────┘         │   :8002     │
+              │                └──────┬──────┘
+       ┌──────┴──────┐         ┌──────┴──────┐
+       │  Auth DB    │         │ Dashboard DB │
+       │ (Postgres)  │         │ (Postgres)   │
+       └─────────────┘         └──────────────┘
 ```
 
-*(Diagram ini akan berkembang setiap minggu)*
+## 🚀 Quick Start
 
-### Fitur Dashboard Revenue
-
-| Menu | Sub-Menu | Deskripsi |
-|------|----------|-----------|
-| Main Dashboard | - | Overview realisasi revenue keseluruhan |
-| Regional | Realisasi, Trend | Data revenue tingkat regional |
-| Witel | Realisasi, Trend, Monthly | Data revenue per Witel |
-| Telda | Realisasi | Data revenue per Telda |
-| AM | - | Performance Account Manager |
-| Prognosa | - | Forecasting revenue |
-| NGTMA | - | Next Gen Territory Management & Analytics |
-
-## 🚀 Getting Started
-
-Panduan setup lengkap dari clone hingga aplikasi berjalan (database, `.env`, troubleshooting): **[docs/setup-guide.md](docs/setup-guide.md)**.
-
-### Prasyarat
-- Python 3.10+
-- Node.js 18+
-- Git
-
-### Backend
+### Cara 1: Microservices (Docker Compose)
 ```bash
-cd backend
-pip install -r requirements.txt
-uvicorn main:app --reload --port 8000
+docker compose -f docker-compose.microservices.yml up --build -d
 ```
+- Frontend: http://localhost:3000
+- Gateway API: http://localhost:8080
+- API Docs Auth: http://localhost:8080/health/auth
+- API Docs Dashboard: http://localhost:8080/health/dashboard
 
-Buka browser:
-- API: http://localhost:8000
+### Cara 2: Monolith (Docker Compose)
+```bash
+docker compose up --build -d
+```
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000
 - Swagger Docs: http://localhost:8000/docs
 
-### Frontend
+### Cara 3: Development (Manual)
+
+**Backend:**
+```bash
+cd backend
+python -m venv venv
+venv\Scripts\activate
+pip install -r requirements.txt
+copy .env.example .env           # Edit DATABASE_URL
+python seed.py                    # Isi data awal
+uvicorn main:app --reload
+```
+
+**Frontend:**
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Buka browser: http://localhost:5173
+### Default Login
+| User | Email | Password |
+|------|-------|----------|
+| Admin | ariel@student.itk.ac.id | password123 |
+| Viewer | viewer@telkom.co.id | viewer123 |
 
-## 📁 Project Structure
+## 📋 Fitur
+
+| Menu | Deskripsi | CRUD |
+|------|-----------|------|
+| 🔐 Login | JWT Auth + CAPTCHA + Loading Animation | - |
+| 🏠 Dashboard | KPI cards, Revenue trend, Bar chart, Donut chart | Read |
+| 📊 Revenue | Data penjualan per witel/channel/produk | ✅ Full CRUD |
+| 📬 Inbox | Tiket monitoring & Customer Care | ✅ Full CRUD |
+
+## 📁 Struktur Folder
 
 ```
-cc-kelompok-freepalestine/
-├── backend/
-│   ├── main.py              # FastAPI application + CRUD endpoints
-│   ├── database.py          # Koneksi database PostgreSQL
-│   ├── models.py            # SQLAlchemy models (tabel database)
-│   ├── schemas.py           # Pydantic schemas (validasi request/response)
-│   ├── crud.py              # Fungsi CRUD (business logic)
-│   ├── requirements.txt     # Python dependencies
-│   ├── Dockerfile           # Image backend (non-root user)
-│   ├── .dockerignore        # File yang dikecualikan dari image
-│   ├── .env                 # Environment variables (TIDAK di-commit!)
-│   └── .env.example         # Template environment variables
-├── frontend/
-│   ├── src/                 # React app (Vite)
-│   ├── Dockerfile           # Multi-stage build frontend (Node -> Nginx)
-│   └── .env.example         # Template environment frontend
-├── docker-compose.yml       # Orkestrasi frontend + backend + db
-├── Makefile                 # Shortcut perintah Docker Compose
-├── .env.docker.example      # Template env untuk docker compose
+tubes-dashboard-telkom/
+├── backend/                          # Monolith API (Week 1-6)
+│   ├── main.py, models.py, crud.py   # FastAPI app
+│   ├── auth.py, schemas.py           # Auth & validation
+│   ├── seed.py, test_main.py         # Seeder & tests
+│   └── Dockerfile                    # Container
+├── frontend/                         # React UI
+│   ├── src/components/               # Layout, Charts
+│   ├── src/pages/                    # Auth, Dashboard, Revenue, Inbox
+│   └── Dockerfile                    # Multi-stage build
+├── services/                         # Microservices (Week 12+)
+│   ├── auth-service/                 # Auth microservice (:8001)
+│   ├── dashboard-service/            # Data microservice (:8002)
+│   └── gateway/                      # Nginx API Gateway
+├── .github/
+│   ├── workflows/ci.yml              # CI pipeline
+│   ├── workflows/cd.yml              # CD pipeline
+│   ├── CODEOWNERS                    # Auto-review
+│   └── pull_request_template.md      # PR template
 ├── docs/
-│   ├── setup-guide.md       # Panduan setup dari clone sampai running
-│   ├── api-test-results.md  # Hasil testing API
-│   ├── database-schema.md   # Schema database
-│   ├── member-ariel.md      # Info anggota
-│   ├── member-radit.md
-│   └── member-irud.md
-├── setup.sh                 # Script install dependencies
-├── .gitignore
-└── README.md
+│   ├── api-contract.md               # API documentation
+│   ├── deployment-guide.md           # Deploy instructions
+│   ├── branching-strategy.md         # Git workflow
+│   └── release-notes.md              # Changelog
+├── docker-compose.yml                # Monolith compose
+└── docker-compose.microservices.yml  # Microservices compose
 ```
 
-## 📅 Roadmap
+## 🔗 API Endpoints
 
-| Minggu | Target | Status |
-|--------|--------|--------|
-| 1 | Setup & Hello World | ✅ |
-| 2 | REST API + Database | ✅ |
-| 3 | React Frontend | ✅ |
-| 4 | Full-Stack Integration | ✅ |
-| 5-7 | Docker & Compose | ✅ |
-| 8 | UTS Demo | ⬜ |
-| 9-11 | CI/CD Pipeline | ⬜ |
-| 12-14 | Microservices | ⬜ |
-| 15-16 | Final & UAS | ⬜ |
+### Auth Service
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| POST | /auth/register | Register user | ❌ |
+| POST | /auth/login | Login & JWT | ❌ |
+| GET | /auth/me | Profil user | ✅ |
+| GET | /auth/verify | Token validation (inter-service) | ✅ |
 
-## 📝 API Endpoints
+### Dashboard Service
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| GET/POST | /sales | List & Create sales | ✅ |
+| GET/PUT/DELETE | /sales/{id} | Read, Update, Delete | ✅ |
+| GET | /sales/summary | Revenue statistik | ✅ |
+| GET | /sales/monthly | Chart data bulanan | ✅ |
+| GET/POST | /inbox | List & Create tiket | ✅ |
+| GET/PUT/DELETE | /inbox/{id} | Read, Update, Delete | ✅ |
+| GET | /inbox/stats | Tiket per status | ✅ |
 
-Base URL: `http://localhost:8000`  
-Swagger UI: `http://localhost:8000/docs`
-
-### Health & Info
-
+### System
 | Method | Endpoint | Deskripsi |
 |--------|----------|-----------|
-| GET | `/health` | Health check |
-| GET | `/team` | Informasi tim |
-| GET | `/docs` | Swagger UI (auto-generated) |
+| GET | /health | Health check |
+| GET | /metrics | Request metrics |
+| GET | /team | Info tim |
 
-### CRUD — Items
-
-#### 1. `POST /items` — Buat Item Baru
-
-**Request Body:**
-```json
-{
-  "name": "Laptop",
-  "price": 15000000,
-  "description": "Laptop untuk cloud computing",
-  "quantity": 5
-}
-```
-
-**Response (201 Created):**
-```json
-{
-  "id": 1,
-  "name": "Laptop",
-  "price": 15000000.0,
-  "description": "Laptop untuk cloud computing",
-  "quantity": 5,
-  "created_at": "2026-03-04T03:11:00+00:00",
-  "updated_at": null
-}
-```
-
-#### 2. `GET /items` — List Semua Items (dengan pagination & search)
-
-**Query Parameters:**
-| Parameter | Tipe | Default | Deskripsi |
-|-----------|------|---------|-----------|
-| `skip` | int | 0 | Offset untuk pagination |
-| `limit` | int | 20 | Jumlah item per halaman (max 100) |
-| `search` | string | null | Kata kunci pencarian nama/deskripsi |
-
-**Response (200 OK):**
-```json
-{
-  "total": 3,
-  "items": [
-    {
-      "id": 1,
-      "name": "Laptop",
-      "price": 15000000.0,
-      "description": "Laptop untuk cloud computing",
-      "quantity": 5,
-      "created_at": "2026-03-04T03:11:00+00:00",
-      "updated_at": null
-    }
-  ]
-}
-```
-
-#### 3. `GET /items/{item_id}` — Ambil Item by ID
-
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Laptop",
-  "price": 15000000.0,
-  "description": "Laptop untuk cloud computing",
-  "quantity": 5,
-  "created_at": "2026-03-04T03:11:00+00:00",
-  "updated_at": null
-}
-```
-
-**Response (404 Not Found):**
-```json
-{
-  "detail": "Item dengan id=999 tidak ditemukan"
-}
-```
-
-#### 4. `PUT /items/{item_id}` — Update Item (Partial Update)
-
-**Request Body** (semua field opsional):
-```json
-{
-  "price": 14000000
-}
-```
-
-**Response (200 OK):**
-```json
-{
-  "id": 1,
-  "name": "Laptop",
-  "price": 14000000.0,
-  "description": "Laptop untuk cloud computing",
-  "quantity": 5,
-  "created_at": "2026-03-04T03:11:00+00:00",
-  "updated_at": "2026-03-04T03:15:00+00:00"
-}
-```
-
-#### 5. `DELETE /items/{item_id}` — Hapus Item
-
-**Response:** `204 No Content`
-
-**Response jika tidak ditemukan (404):**
-```json
-{
-  "detail": "Item dengan id=1 tidak ditemukan"
-}
-```
-
-#### 6. `GET /items/stats` — Statistik Inventory
-
-**Response (200 OK):**
-```json
-{
-  "total_items": 3,
-  "total_value": 84600000.0,
-  "most_expensive": {
-    "name": "Laptop",
-    "price": 15000000.0
-  },
-  "cheapest": {
-    "name": "Mouse Wireless",
-    "price": 250000.0
-  }
-}
-```
-
-## 🔐 Authentication
-
-Aplikasi menggunakan **JWT (JSON Web Token)** untuk autentikasi. Semua endpoint `/items` membutuhkan token.
-
-### Alur Auth
-1. **Register** → `POST /auth/register` dengan email, nama, password
-2. **Login** → `POST /auth/login` → dapat `access_token`
-3. **Akses endpoint** → kirim token di header: `Authorization: Bearer <token>`
-4. **Token expired** → login ulang untuk dapat token baru
-
-### Auth Endpoints
-
-| Method | Endpoint | Deskripsi | Auth Required |
-|--------|----------|-----------|---------------|
-| POST | `/auth/register` | Daftar akun baru | ❌ Tidak |
-| POST | `/auth/login` | Login, dapat JWT token | ❌ Tidak |
-| GET | `/auth/me` | Profil user saat ini | ✅ Ya |
-
-> ⚠️ Semua endpoint `/items` (GET, POST, PUT, DELETE) membutuhkan token JWT valid.
-
----
-
-## 🐳 Docker
-
-Stack full aplikasi sudah dikontainerisasi dengan Docker Compose (Modul 7): `frontend`, `backend`, dan `db`.
-
-### Prasyarat
-- Docker Desktop terinstall dan berjalan
-- File `.env.docker` tersedia (copy dari `.env.docker.example`)
-
-### Menjalankan Full Stack dengan Docker Compose
+## 🧪 Testing
 
 ```bash
-# Siapkan env khusus compose (sekali saja)
-cp .env.docker.example .env.docker
-
-# Build + start semua services
-docker compose --env-file .env.docker up --build -d
-
-# Cek status
-docker compose --env-file .env.docker ps
-
-# Lihat logs
-docker compose --env-file .env.docker logs -f
+cd backend
+pip install pytest httpx
+pytest test_main.py -v
 ```
 
-Service URL default:
+## 📊 Modul Coverage
 
-- Frontend: `http://localhost:3000`
-- Backend API: `http://localhost:8000`
-- Swagger: `http://localhost:8000/docs`
-- PostgreSQL host port: `localhost:5433`
-
-Jika ada port yang bentrok, override sebelum menjalankan compose:
-
-```bash
-BACKEND_PORT=8001 FRONTEND_PORT=3001 DB_PORT=5434 docker compose up -d
-```
-
-Atau ubah nilainya permanen di file `.env.docker`.
-
-### Shortcut dengan Makefile
-
-```bash
-make up           # Start semua services
-make build        # Rebuild lalu start
-make ps           # Status services
-make logs         # Logs semua service
-make logs-backend # Logs backend saja
-make down         # Stop dan remove containers
-make clean        # Down + hapus volume + prune (data lokal hilang)
-make compose-config # Validasi docker-compose.yml
-```
-
-Jika `make` belum terpasang di Windows, gunakan command Compose langsung:
-
-```bash
-docker compose --env-file .env.docker up -d
-docker compose --env-file .env.docker ps
-docker compose --env-file .env.docker logs -f
-docker compose --env-file .env.docker down
-```
-
-### Release image ke Docker Hub (Lead CI/CD)
-
-```bash
-# Build image lokal backend+frontend
-make images-build
-
-# Tag image versi + latest
-make images-tag DOCKERHUB_USERNAME=<username-dockerhub>
-
-# Push ke Docker Hub
-make images-push DOCKERHUB_USERNAME=<username-dockerhub>
-```
-
-Atau satu langkah:
-
-```bash
-make release-images DOCKERHUB_USERNAME=<username-dockerhub>
-```
-
-Alternatif tanpa `make`:
-
-```bash
-DOCKERHUB_USERNAME=<username-dockerhub> sh scripts/push-images.sh
-```
-
-### Base Image
-
-Backend menggunakan `python:3.12-alpine` dengan multi-stage build dan user non-root.  
-Frontend menggunakan multi-stage build (`node:20-alpine` -> `nginx:alpine`).
-Lihat perbandingan lengkap: [docs/image-comparison.md](docs/image-comparison.md)
-Rangkuman deliverable modul 6-7 (peran CI/CD): [docs/devops-artifacts.md](docs/devops-artifacts.md)
-
-### Docker Commands Reference
-
-Lihat [docs/docker-cheatsheet.md](docs/docker-cheatsheet.md) untuk referensi lengkap semua Docker commands yang digunakan dalam proyek ini.
-
----
-
-## 📄 Lisensi
-
-Proyek ini dibuat untuk keperluan mata kuliah **Komputasi Awan** - Program Studi Sistem Informasi, Institut Teknologi Kalimantan.
+| Week | Topik | Status |
+|------|-------|--------|
+| 1-2 | FastAPI + REST API + PostgreSQL | ✅ |
+| 3 | Frontend React + Vite | ✅ |
+| 4 | JWT Authentication + CORS | ✅ |
+| 5-6 | Dockerfile + Docker Compose | ✅ |
+| 7 | Docker Compose Finalization | ✅ |
+| 9 | Git Workflow + CODEOWNERS + PR Template | ✅ |
+| 10 | CI Pipeline (GitHub Actions) | ✅ |
+| 11 | CD Pipeline (Railway) | ✅ |
+| 12 | Microservices Decomposition | ✅ |
+| 13 | Circuit Breaker + Retry | ✅ |
+| 14 | Structured Logging + Metrics | ✅ |
+| 15 | Rate Limiting + Security + Docs | ✅ |

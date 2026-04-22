@@ -1,177 +1,84 @@
-import { useState, useEffect, useCallback } from "react"
-import Header from "./components/Header"
-import SearchBar from "./components/SearchBar"
-import ItemForm from "./components/ItemForm"
-import ItemList from "./components/ItemList"
-import LoginPage from "./components/LoginPage"
-import Notification from "./components/Notification"
-import {
-  fetchItems, createItem, updateItem, deleteItem,
-  checkHealth, login, register, setToken, clearToken,
-} from "./services/api"
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { useEffect, useCallback } from 'react';
+import { MainLayout } from './components/Layout';
+import { ToastProvider } from './components/Toast/ToastProvider';
+import LoginPage from './pages/Auth/LoginPage';
+import HomeDashboard from './pages/Dashboard/HomeDashboard';
+import RevenuePage from './pages/Revenue/RevenuePage';
+import InboxPage from './pages/Inbox/InboxPage';
+import CustomerCarePage from './pages/CustomerCare/CustomerCarePage';
+import LeaderboardPage from './pages/Leaderboard/LeaderboardPage';
+import UploadPage from './pages/Upload/UploadPage';
+import UsersPage from './pages/Users/UsersPage';
+import AboutPage from './pages/About/AboutPage';
+import './index.css';
+
+const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+function updateActivity() {
+    localStorage.setItem('lastActivityTime', Date.now().toString());
+}
+
+function applyInitialTheme() {
+    const t = localStorage.getItem('theme') || 'dark';
+    document.documentElement.dataset.theme = t;
+}
+applyInitialTheme();
+
+function ProtectedRoute({ children }) {
+    const navigate = useNavigate();
+    const isLoggedIn = !!localStorage.getItem('access_token');
+
+    const doLogout = useCallback(() => {
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('lastActivityTime');
+        navigate('/login', { replace: true });
+    }, [navigate]);
+
+    useEffect(() => {
+        if (!isLoggedIn) return;
+
+        const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'];
+        events.forEach((e) => window.addEventListener(e, updateActivity));
+        updateActivity();
+
+        const interval = setInterval(() => {
+            const last = parseInt(localStorage.getItem('lastActivityTime') || '0', 10);
+            if (Date.now() - last > SESSION_TIMEOUT_MS) doLogout();
+        }, 60000);
+
+        return () => {
+            events.forEach((e) => window.removeEventListener(e, updateActivity));
+            clearInterval(interval);
+        };
+    }, [isLoggedIn, doLogout]);
+
+    if (!isLoggedIn) return <Navigate to="/login" replace />;
+    return children;
+}
 
 function App() {
-  // ==================== AUTH STATE ====================
-  const [user, setUser] = useState(null)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  // ==================== APP STATE ====================
-  const [items, setItems] = useState([])
-  const [totalItems, setTotalItems] = useState(0)
-  const [loading, setLoading] = useState(true)
-  const [isConnected, setIsConnected] = useState(false)
-  const [editingItem, setEditingItem] = useState(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [notification, setNotification] = useState(null)
-
-  // ==================== NOTIFICATION HELPER ====================
-  const showNotification = (message, type = "success") => {
-    setNotification({ message, type })
-  }
-
-  // ==================== LOAD DATA ====================
-  const loadItems = useCallback(async (search = "") => {
-    setLoading(true)
-    try {
-      const data = await fetchItems(search)
-      setItems(data.items)
-      setTotalItems(data.total)
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") {
-        handleLogout()
-      }
-      console.error("Error loading items:", err)
-    } finally {
-      setLoading(false)
-    }
-  }, [])
-
-  useEffect(() => {
-    checkHealth().then(setIsConnected)
-  }, [])
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadItems()
-    }
-  }, [isAuthenticated, loadItems])
-
-  // ==================== AUTH HANDLERS ====================
-
-  const handleLogin = async (email, password) => {
-    const data = await login(email, password)
-    setUser(data.user)
-    setIsAuthenticated(true)
-    showNotification(`Selamat datang, ${data.user.name}!`)
-  }
-
-  const handleRegister = async (userData) => {
-    await register(userData)
-    await handleLogin(userData.email, userData.password)
-  }
-
-  const handleLogout = () => {
-    clearToken()
-    setUser(null)
-    setIsAuthenticated(false)
-    setItems([])
-    setTotalItems(0)
-    setEditingItem(null)
-    setSearchQuery("")
-  }
-
-  // ==================== ITEM HANDLERS ====================
-
-  const handleSubmit = async (itemData, editId) => {
-    try {
-      if (editId) {
-        await updateItem(editId, itemData)
-        setEditingItem(null)
-        showNotification("Item berhasil diupdate!")
-      } else {
-        await createItem(itemData)
-        showNotification("Item berhasil ditambahkan!")
-      }
-      loadItems(searchQuery)
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
-      else {
-        showNotification(err.message, "error")
-        throw err
-      }
-    }
-  }
-
-  const handleEdit = (item) => {
-    setEditingItem(item)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
-
-  const handleDelete = async (id) => {
-    const item = items.find((i) => i.id === id)
-    if (!window.confirm(`Yakin ingin menghapus "${item?.name}"?`)) return
-    try {
-      await deleteItem(id)
-      showNotification("Item berhasil dihapus!")
-      loadItems(searchQuery)
-    } catch (err) {
-      if (err.message === "UNAUTHORIZED") handleLogout()
-      else showNotification("Gagal menghapus: " + err.message, "error")
-    }
-  }
-
-  const handleSearch = (query) => {
-    setSearchQuery(query)
-    loadItems(query)
-  }
-
-  // ==================== RENDER ====================
-
-  if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} onRegister={handleRegister} />
-  }
-
-  return (
-    <div style={styles.app}>
-      <div style={styles.container}>
-        {notification && (
-          <Notification
-            message={notification.message}
-            type={notification.type}
-            onClose={() => setNotification(null)}
-          />
-        )}
-        <Header
-          totalItems={totalItems}
-          isConnected={isConnected}
-          user={user}
-          onLogout={handleLogout}
-        />
-        <ItemForm
-          onSubmit={handleSubmit}
-          editingItem={editingItem}
-          onCancelEdit={() => setEditingItem(null)}
-        />
-        <SearchBar onSearch={handleSearch} />
-        <ItemList
-          items={items}
-          onEdit={handleEdit}
-          onDelete={handleDelete}
-          loading={loading}
-        />
-      </div>
-    </div>
-  )
+    return (
+        <ToastProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                        <Route index element={<HomeDashboard />} />
+                        <Route path="revenue" element={<RevenuePage />} />
+                        <Route path="inbox" element={<InboxPage />} />
+                        <Route path="customer-care" element={<CustomerCarePage />} />
+                        <Route path="leaderboard" element={<LeaderboardPage />} />
+                        <Route path="upload" element={<UploadPage />} />
+                        <Route path="users" element={<UsersPage />} />
+                        <Route path="about" element={<AboutPage />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </ToastProvider>
+    );
 }
 
-const styles = {
-  app: {
-    minHeight: "100vh",
-    backgroundColor: "#f0f2f5",
-    padding: "2rem",
-    fontFamily: "'Segoe UI', Arial, sans-serif",
-  },
-  container: { maxWidth: "900px", margin: "0 auto" },
-}
-
-export default App
+export default App;

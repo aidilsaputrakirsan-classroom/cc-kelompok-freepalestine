@@ -1,10 +1,37 @@
-node_modules
-dist
-.git
+# Dependencies — akan di-install ulang di dalam container.
+node_modules/
+
+# Hasil build lokal — tidak perlu, stage builder akan build ulang.
+dist/
+build/
+
+# Environment files (jangan pernah masuk image!)
+.env
+.env.local
+.env.development
+.env.production
+
+# VCS
+.git/
 .gitignore
-Dockerfile
-README.md
+
+# Dokumentasi
+*.md
+docs/
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Log & debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
+
+# Docker
+Dockerfile
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
