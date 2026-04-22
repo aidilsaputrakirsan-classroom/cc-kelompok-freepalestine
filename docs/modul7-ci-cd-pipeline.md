@@ -1,29 +1,65 @@
-# Modul 7: CI/CD Pipeline & Deployment
+# Modul 7: Docker Compose — Orkestrasi Multi-Container
 
 ## 📌 Tujuan
-Modul pamungkas yang membahas Automasi pengujian dan tata rilis (*Continuous Integration & Continuous Deployment*). Mengubah prosedur manual *Deployment* aplikasi menjadi arsitektur rilis yang mulus berbasis Pipeline yang terintegrasi secara langsung dengan kode di respositori GitHub.
+Modul ini mendokumentasikan penggunaan **Docker Compose** untuk mengatur dan menjalankan seluruh komponen aplikasi (Database, Backend, Frontend) sekaligus melalui satu perintah tunggal, menggantikan proses menjalankan container satu per satu secara manual.
 
-## ⚙️ GitHub Actions Workflow (CI)
-Di setiap kali anggota melakukan `Git Push` mengarah ke branch `main`, eksekusi Pipeline `.github/workflows/` akan aktif.
-Aksi-aksi yang tercatat pada jobs meliputi:
-- Pembuatan virtual runner (Instance Ubuntu GitHub).
-- *Checkout repository* dan insiasi *cache tools*.
-- Me-running sistem *Linter* lintasan program untuk standarisasi syntax.
-- Melakukan Test Automasi (menggunakan PyTest / sejenisnya).
-- Mencegah kode cacat (*broken bugs*) bergabung ke dalam server utama.
+## 🌐 Arsitektur Compose
 
-## 🚀 Continous Deployment (CD PaaS - Railway)
-Ketika blok Integration dilaporkan centang hijau (*Passed*), *trigger* Pipeline berlanjut ke Workflow *Publishing*.
-Proyek ini meneruskan Container `Backend API` Docker secara otonom menuju platform Cloud Hosting **Railway / Render** tanpa proses copy paste kode manual dari Admin.
+Seluruh layanan didefinisikan dalam satu file `docker-compose.yml` di root project. Tiga *service* utama terhubung dalam satu jaringan internal bernama `cloudnet`:
 
-## 🧪 Validasi Deployment & CI/CD Pipeline
+```
+[Browser :3000]  →  [Frontend: Nginx+React]
+                           ↓
+                 [Backend: FastAPI :8000]
+                           ↓
+                 [Database: PostgreSQL]
+                           ↓
+                 [Volume: pgdata (Persistent)]
+```
 
-Pengecekan laporan *Log Runners* di tab *Actions* milik GitHub.
+## 🗂️ Service yang Didefinisikan
 
-| Output Passed CI Workflow GitHub Actions |
+| Service | Image / Build | Port | Fungsi |
+|---------|--------------|------|--------|
+| `db` | `postgres:16-alpine` | 5433:5432 | Database relasional (data persist via volume `pgdata`) |
+| `backend` | Build dari `./backend/Dockerfile` | 8000:8000 | REST API FastAPI — menunggu `db` sehat sebelum start |
+| `frontend` | Build dari `./frontend/Dockerfile` | 3000:80 | React SPA yang di-serve lewat Nginx |
+
+## ⚙️ Konfigurasi Penting
+
+- **`depends_on + healthcheck`**: Backend tidak akan startup sebelum PostgreSQL benar-benar siap menerima koneksi (`pg_isready`).
+- **`restart: unless-stopped`**: Container otomatis nyala ulang jika crash.
+- **`volumes: pgdata`**: Data database tetap ada walaupun container dimatikan (`docker compose down`).
+- **`env_file`**: Konfigurasi sensitif (password, secret key) dibaca dari file `.env.docker`, tidak di-hardcode.
+
+## 📋 Perintah Utama
+
+| Perintah | Fungsi |
+|----------|--------|
+| `docker compose up --build -d` | Build semua image & jalankan semua service di background |
+| `docker compose ps` | Cek status semua container (Running / Healthy) |
+| `docker compose logs -f backend` | Pantau log realtime service backend |
+| `docker compose down` | Hentikan & hapus semua container (data aman di volume) |
+| `docker compose restart backend` | Restart satu service saja tanpa mematikan yang lain |
+
+## 🧪 Validasi Orkestrasi
+
+Seluruh service berhasil berjalan bersamaan, dibuktikan dari output terminal dan tampilan Docker Desktop.
+
+| Output `docker compose up --build` (Terminal) | Status Services di Docker Desktop |
+| :---: | :---: |
+| ![Compose UP](./screenshots/modul7-compose-up.png) | ![Compose Services](./screenshots/modul7-compose-services.png) |
+
+| Output `docker compose ps` — 3 Services Running & Healthy |
+| :---: |
+| ![Compose PS](./screenshots/modul7-compose-ps.png) |
+
+---
+
+## 🚀 Ekstra: Continuous Integration (CI) Pipeline
+Selain orkestrasi, kami juga menerapkan **GitHub Actions** untuk memastikan setiap kode yang di-push melewati tahapan integrasi. Setiap push ke branch akan men-_trigger_ virtual environment untuk melakukan _checkout_, manajemen dependensi, dan simulasi proses build.
+
+| Workflow GitHub Actions Berhasil (Passed) |
 | :---: |
 | ![CI Actions Success](./screenshots/modul7-ci-actions.png) |
 
-| Live Deployment Railway Dashboard |
-| :---: |
-| ![CD Cloud Railway Server](./screenshots/modul7-cd-deploy.png) |
