@@ -5,9 +5,10 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 
 from database import engine, get_db
 from models import Base, User, SalesData, InboxItem, DataSource, Telda, AuditLog
@@ -50,8 +51,29 @@ app.add_middleware(CORSMiddleware, allow_origins=origins_list, allow_credentials
 
 # ==================== HEALTH ====================
 @app.get("/health")
-def health_check():
-    return {"status": "healthy", "version": "2.5.0", "service": "dashboard-telkom-api"}
+def health_check(db: Session = Depends(get_db)):
+    """Health check endpoint — cek status service + koneksi database.
+
+    Return 200 jika semua komponen sehat, 503 jika ada komponen yang gagal.
+    Dipakai oleh load balancer / orchestrator (Docker, Railway) untuk
+    menentukan apakah container siap menerima trafik.
+    """
+    health = {
+        "status": "healthy",
+        "service": "dashboard-telkom-api",
+        "version": "2.5.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+    try:
+        db.execute(text("SELECT 1"))
+        health["database"] = "connected"
+    except Exception as exc:
+        health["status"] = "unhealthy"
+        health["database"] = f"error: {str(exc)[:120]}"
+
+    status_code = 200 if health["status"] == "healthy" else 503
+    return JSONResponse(content=health, status_code=status_code)
 
 
 # ==================== AUTH ====================
