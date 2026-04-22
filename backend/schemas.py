@@ -27,6 +27,17 @@ class ChangePasswordRequest(BaseModel):
     old_password: str = Field(..., min_length=1)
     new_password: str = Field(..., min_length=8)
 
+class UserAdminCreate(BaseModel):
+    email: EmailStr
+    name: str = Field(..., min_length=2, max_length=100)
+    password: str = Field(..., min_length=8)
+    role: str = Field("viewer", pattern="^(admin|viewer)$")
+
+class UserAdminUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    role: Optional[str] = Field(None, pattern="^(admin|viewer)$")
+    is_active: Optional[bool] = None
+
 
 # ============================================================
 # SALES DATA SCHEMAS
@@ -156,3 +167,40 @@ class NotificationItem(BaseModel):
     severity: str  # low, medium, high, critical
     datasource_ids: Optional[List[int]] = None
     created_at: Optional[str] = None
+
+
+# ============================================================
+# AUDIT LOG SCHEMAS
+# ============================================================
+
+class AuditLogResponse(BaseModel):
+    id: int
+    user_id: Optional[int] = None
+    user_email: Optional[str] = None
+    action: str
+    entity_type: Optional[str] = None
+    entity_id: Optional[str] = None
+    detail: Optional[str] = None
+    created_at: datetime
+    class Config:
+        from_attributes = True
+
+class AuditLogListResponse(BaseModel):
+    total: int
+    items: List[AuditLogResponse]
+
+
+# ============================================================
+# LEADERBOARD SCHEMAS
+# ============================================================
+
+class LeaderboardRow(BaseModel):
+    rank: int
+    witel: str
+    revenue_actual: float
+    revenue_target: float
+    achievement: float
+    tickets_total: int
+    tickets_resolved: int
+    resolution_rate: float
+    score: float

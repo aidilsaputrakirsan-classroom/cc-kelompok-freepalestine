@@ -1,10 +1,15 @@
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { useEffect, useCallback } from 'react';
 import { MainLayout } from './components/Layout';
+import { ToastProvider } from './components/Toast/ToastProvider';
 import LoginPage from './pages/Auth/LoginPage';
 import HomeDashboard from './pages/Dashboard/HomeDashboard';
 import RevenuePage from './pages/Revenue/RevenuePage';
 import InboxPage from './pages/Inbox/InboxPage';
+import CustomerCarePage from './pages/CustomerCare/CustomerCarePage';
+import LeaderboardPage from './pages/Leaderboard/LeaderboardPage';
+import UploadPage from './pages/Upload/UploadPage';
+import UsersPage from './pages/Users/UsersPage';
 import './index.css';
 
 const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
@@ -12,6 +17,12 @@ const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 function updateActivity() {
     localStorage.setItem('lastActivityTime', Date.now().toString());
 }
+
+function applyInitialTheme() {
+    const t = localStorage.getItem('theme') || 'dark';
+    document.documentElement.dataset.theme = t;
+}
+applyInitialTheme();
 
 function ProtectedRoute({ children }) {
     const navigate = useNavigate();
@@ -48,17 +59,23 @@ function ProtectedRoute({ children }) {
 
 function App() {
     return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-                    <Route index element={<HomeDashboard />} />
-                    <Route path="revenue" element={<RevenuePage />} />
-                    <Route path="inbox" element={<InboxPage />} />
-                    <Route path="*" element={<Navigate to="/" replace />} />
-                </Route>
-            </Routes>
-        </BrowserRouter>
+        <ToastProvider>
+            <BrowserRouter>
+                <Routes>
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                        <Route index element={<HomeDashboard />} />
+                        <Route path="revenue" element={<RevenuePage />} />
+                        <Route path="inbox" element={<InboxPage />} />
+                        <Route path="customer-care" element={<CustomerCarePage />} />
+                        <Route path="leaderboard" element={<LeaderboardPage />} />
+                        <Route path="upload" element={<UploadPage />} />
+                        <Route path="users" element={<UsersPage />} />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </ToastProvider>
     );
 }
 

@@ -1,8 +1,11 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List, Optional
-from models import User, SalesData, InboxItem
-from schemas import SalesCreate, SalesUpdate, UserCreate, InboxCreate, InboxUpdate
+from models import User, SalesData, InboxItem, AuditLog
+from schemas import (
+    SalesCreate, SalesUpdate, UserCreate, InboxCreate, InboxUpdate,
+    UserAdminCreate, UserAdminUpdate,
+)
 from auth import hash_password, verify_password
 
 
@@ -225,3 +228,116 @@ def get_inbox_stats(db: Session, witel: str = None):
         "pending": stats.get("pending", 0), "in_progress": stats.get("in_progress", 0),
         "completed": stats.get("completed", 0), "rejected": stats.get("rejected", 0),
     }
+
+
+# ==================== AUDIT LOG ====================
+
+def log_audit(db: Session, user: Optional[User], action: str,
+              entity_type: str = None, entity_id=None, detail: str = None):
+    """Catat aktivitas user ke audit_logs. Aman dipanggil dari mana saja."""
+    try:
+        log = AuditLog(
+            user_id=user.id if user else None,
+            user_email=user.email if user else None,
+            action=action,
+            entity_type=entity_type,
+            entity_id=str(entity_id) if entity_id is not None else None,
+            detail=detail,
+        )
+        db.add(log); db.commit()
+    except Exception:
+        db.rollback()
+
+def get_audit_logs(db: Session, skip=0, limit=50, action=None, user_id=None):
+    q = db.query(AuditLog)
+    if action:
+        q = q.filter(AuditLog.action == action)
+    if user_id:
+        q = q.filter(AuditLog.user_id == user_id)
+    total = q.count()
+    items = q.order_by(AuditLog.created_at.desc()).offset(skip).limit(limit).all()
+    return {"total": total, "items": items}
+
+
+# ==================== LEADERBOARD ====================
+
+def get_leaderboard(db: Session, year: int = None):
+    """
+    Peringkat per Witel: berdasarkan achievement revenue (dari SalesData)
+    + resolution rate tiket (InboxItem).
+    Target murni diambil dari SalesData.revenue_target (tidak ada override manual).
+    """
+    sales_q = db.query(
+        SalesData.witel,
+        func.sum(SalesData.revenue_actual).label("rev_actual"),
+        func.sum(SalesData.revenue_target).label("rev_target"),
+    )
+    if year:
+        sales_q = sales_q.filter(SalesData.period_year == year)
+    sales_rows = sales_q.group_by(SalesData.witel).all()
+
+    # Tickets per witel
+    inbox_rows = db.query(
+        InboxItem.witel, InboxItem.status, func.count(InboxItem.id)
+    ).group_by(InboxItem.witel, InboxItem.status).all()
+    t_map: dict[str, dict] = {}
+    for w, st, cnt in inbox_rows:
+        t_map.setdefault(w, {"total": 0, "resolved": 0})
+        t_map[w]["total"] += cnt
+        if st == "completed":
+            t_map[w]["resolved"] += cnt
+
+    result = []
+    for s in sales_rows:
+        witel = s.witel
+        actual = float(s.rev_actual or 0)
+        target = float(s.rev_target or 0)
+        ach = round((actual / target) * 100, 1) if target > 0 else 0.0
+        tstat = t_map.get(witel, {"total": 0, "resolved": 0})
+        res_rate = round((tstat["resolved"] / tstat["total"]) * 100, 1) if tstat["total"] else 0.0
+        # Skor gabungan: 70% revenue ach + 30% tiket
+        score = round(ach * 0.7 + res_rate * 0.3, 2)
+        result.append({
+            "witel": witel,
+            "revenue_actual": round(actual, 2),
+            "revenue_target": round(target, 2),
+            "achievement": ach,
+            "tickets_total": tstat["total"],
+            "tickets_resolved": tstat["resolved"],
+            "resolution_rate": res_rate,
+            "score": score,
+        })
+    result.sort(key=lambda x: x["score"], reverse=True)
+    for i, row in enumerate(result, start=1):
+        row["rank"] = i
+    return result
+
+
+# ==================== ADMIN USER MANAGEMENT ====================
+
+def admin_create_user(db: Session, data: UserAdminCreate):
+    if db.query(User).filter(User.email == data.email).first():
+        return None
+    u = User(email=data.email, name=data.name, role=data.role,
+             hashed_password=hash_password(data.password))
+    db.add(u); db.commit(); db.refresh(u)
+    return u
+
+def admin_update_user(db: Session, user_id: int, data: UserAdminUpdate):
+    u = db.query(User).filter(User.id == user_id).first()
+    if not u:
+        return None
+    for field, value in data.model_dump(exclude_unset=True).items():
+        setattr(u, field, value)
+    db.commit(); db.refresh(u)
+    return u
+
+def admin_delete_user(db: Session, user_id: int) -> bool:
+    u = db.query(User).filter(User.id == user_id).first()
+    if not u:
+        return False
+    db.delete(u); db.commit()
+    return True
+
+def list_users(db: Session):
+    return db.query(User).order_by(User.created_at.desc()).all()

@@ -42,6 +42,7 @@ export const authApi = {
     register: (data) => api.post('/auth/register', data),
     login: (data) => api.post('/auth/login', data),
     getMe: () => api.get('/auth/me'),
+    changePassword: (data) => api.put('/auth/change-password', data),
 };
 
 // ==================== SALES API ====================
@@ -53,6 +54,8 @@ export const salesApi = {
     delete: (id) => api.delete(`/sales/${id}`),
     summary: (params) => api.get('/sales/summary', { params }),
     monthly: (params) => api.get('/sales/monthly', { params }),
+    byTelda: (params) => api.get('/sales/by-telda', { params }),
+    trend: (params) => api.get('/sales/trend', { params }),
 };
 
 // ==================== INBOX API ====================
@@ -63,6 +66,44 @@ export const inboxApi = {
     update: (id, data) => api.put(`/inbox/${id}`, data),
     delete: (id) => api.delete(`/inbox/${id}`),
     stats: (params) => api.get('/inbox/stats', { params }),
+};
+
+// ==================== LEADERBOARD API ====================
+export const leaderboardApi = {
+    get: (params) => api.get('/leaderboard', { params }),
+};
+
+// ==================== USER MANAGEMENT (ADMIN) ====================
+export const userApi = {
+    list: () => api.get('/users'),
+    create: (data) => api.post('/users', data),
+    update: (id, data) => api.put(`/users/${id}`, data),
+    delete: (id) => api.delete(`/users/${id}`),
+};
+
+// ==================== AUDIT LOG ====================
+export const auditApi = {
+    list: (params) => api.get('/audit-logs', { params }),
+};
+
+// ==================== UPLOAD / DATASOURCE ====================
+export const uploadApi = {
+    salesFile: (formData) =>
+        api.post('/upload/sales', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    inboxFile: (formData) =>
+        api.post('/upload/inbox', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    listDatasources: (params) => api.get('/datasources', { params }),
+    deleteDatasource: (id) => api.delete(`/datasources/${id}`),
+};
+
+// ==================== NOTIFICATIONS ====================
+export const notificationApi = {
+    list: (params) => api.get('/notifications', { params }),
+};
+
+// ==================== MONITORING ====================
+export const monitoringApi = {
+    summary: () => api.get('/monitoring/summary'),
 };
 
 export default api;
