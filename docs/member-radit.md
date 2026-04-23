@@ -1,0 +1,1 @@
+Nama: Raditya Yudianto | NIM: 10231076 | Peran: Lead QA & Docs | Lead Frontend

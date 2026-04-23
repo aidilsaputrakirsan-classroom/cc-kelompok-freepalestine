@@ -70,6 +70,7 @@ export function ToastProvider({ children }) {
     );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
     const ctx = useContext(ToastContext);
     if (!ctx) {
@@ -82,6 +83,7 @@ export function useToast() {
 }
 
 // Helper: ambil pesan error yang aman untuk ditampilkan (axios / fetch / string).
+// eslint-disable-next-line react-refresh/only-export-components
 export function extractErrorMessage(err, fallback = 'Terjadi kesalahan') {
     if (!err) return fallback;
     if (typeof err === 'string') return err;
