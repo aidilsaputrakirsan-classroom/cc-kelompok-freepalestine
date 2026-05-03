@@ -35,7 +35,7 @@ def require_admin(current_user: User = Depends(get_current_user)) -> User:
 
 load_dotenv()
 
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Dashboard Telkom API",

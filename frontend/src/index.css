@@ -865,6 +865,4 @@ td.number { text-align: right; font-variant-numeric: tabular-nums; font-weight: 
     .dashboard-row { grid-template-columns: 1fr; }
     .login-fields-row { grid-template-columns: 1fr; }
     .login-captcha-row { grid-template-columns: 1fr; }
-    .header-user-info { display: none; }
-    .about-hero { flex-direction: column; text-align: center; }
 }

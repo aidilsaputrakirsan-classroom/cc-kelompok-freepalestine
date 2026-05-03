@@ -86,17 +86,3 @@ class DataSource(Base):
     is_active = Column(Boolean, default=True)
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-
-class AuditLog(Base):
-    """Model untuk tabel 'audit_logs' — Riwayat aktivitas user (login, CRUD, upload)."""
-    __tablename__ = "audit_logs"
-
-    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
-    user_email = Column(String(255), nullable=True)
-    action = Column(String(50), nullable=False, index=True)  # login, logout, create_target, update_target, etc
-    entity_type = Column(String(50), nullable=True)          # target, user, sales, inbox, file
-    entity_id = Column(String(100), nullable=True)
-    detail = Column(Text, nullable=True)
-    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
