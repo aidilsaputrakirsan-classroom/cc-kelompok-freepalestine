@@ -1,8 +1,11 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List, Optional
-from models import User, SalesData, InboxItem
-from schemas import SalesCreate, SalesUpdate, UserCreate, InboxCreate, InboxUpdate
+from models import User, SalesData, InboxItem, AuditLog
+from schemas import (
+    SalesCreate, SalesUpdate, UserCreate, InboxCreate, InboxUpdate,
+    UserAdminCreate, UserAdminUpdate,
+)
 from auth import hash_password, verify_password
 
 
@@ -175,7 +178,7 @@ def create_inbox(db: Session, data: InboxCreate, user_id: int = None) -> InboxIt
     return db_inbox
 
 def get_inbox_list(db: Session, skip=0, limit=20, status=None, priority=None,
-                   witel=None, search=None, datasource_id=None):
+                   witel=None, search=None, category=None, datasource_id=None):
     query = db.query(InboxItem)
     if status:
         query = query.filter(InboxItem.status == status)
@@ -183,6 +186,8 @@ def get_inbox_list(db: Session, skip=0, limit=20, status=None, priority=None,
         query = query.filter(InboxItem.priority == priority)
     if witel:
         query = query.filter(InboxItem.witel == witel)
+    if category:
+        query = query.filter(InboxItem.category == category)
     if datasource_id:
         query = query.filter(InboxItem.datasource_id == datasource_id)
     if search:

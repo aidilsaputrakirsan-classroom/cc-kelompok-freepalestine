@@ -1,0 +1,33 @@
+witel,channel,product,revenue_target,revenue_actual,sales_target,sales_actual,period_month,period_year,telda,flag,nama_pelanggan,layanan,nama_am
+BALIKPAPAN,Direct,HSI,25.0,23.5,300,285,1,2026,Balikpapan,Aktif,PT Borneo Jaya,IndiHome 50Mbps,Rizky Pratama
+KALBAR,Mitra,B2B,18.0,19.2,200,212,1,2026,Pontianak,Aktif,CV Khatulistiwa,Astinet,Dewi Lestari
+KALSELTENG,Online,WMS,12.0,11.4,150,142,1,2026,Banjarmasin,Aktif,UD Intan Barito,SME,Ahmad Yusuf
+KALTIMTARA,Direct,HSI,22.0,20.8,280,262,1,2026,Samarinda,Aktif,PT Mahakam Raya,IndiHome 100Mbps,Budi Santoso
+BALIKPAPAN,Mitra,B2B,20.0,21.3,220,235,2,2026,Balikpapan,Aktif,PT Teluk Balikpapan,Astinet,Rizky Pratama
+KALBAR,Direct,HSI,28.0,26.5,320,310,2,2026,Pontianak,Aktif,PT Kapuas Group,IndiHome 100Mbps,Dewi Lestari
+KALSELTENG,Direct,B2B,15.0,15.8,180,190,2,2026,Palangkaraya,Aktif,CV Barito Hilir,Astinet,Ahmad Yusuf
+KALTIMTARA,Online,WMS,10.0,9.7,130,125,2,2026,Tarakan,Aktif,UD Tarakan Mandiri,SME,Budi Santoso
+BALIKPAPAN,Direct,WMS,14.0,13.2,170,158,3,2026,Balikpapan,Aktif,CV Sepinggan,SME,Rizky Pratama
+KALBAR,Online,B2B,22.0,23.1,250,260,3,2026,Singkawang,Aktif,PT Tirta Borneo,Astinet,Dewi Lestari
+KALSELTENG,Mitra,HSI,30.0,28.4,340,322,3,2026,Banjarmasin,Aktif,PT Banua Prima,IndiHome 100Mbps,Ahmad Yusuf
+KALTIMTARA,Direct,B2B,19.0,20.2,210,225,3,2026,Samarinda,Aktif,PT Mahakam Digital,Astinet,Budi Santoso
+BALIKPAPAN,Direct,HSI,27.0,26.1,310,295,4,2026,Balikpapan,Aktif,PT Borneo Raya,IndiHome 100Mbps,Rizky Pratama
+KALBAR,Mitra,WMS,11.0,10.6,140,132,4,2026,Pontianak,Aktif,UD Kapuas Hulu,SME,Dewi Lestari
+KALSELTENG,Direct,HSI,26.0,25.3,290,280,4,2026,Banjarmasin,Aktif,PT Saijaan Sejahtera,IndiHome 100Mbps,Ahmad Yusuf
+KALTIMTARA,Online,B2B,17.0,18.0,190,205,4,2026,Samarinda,Aktif,PT Kaltim Digital,Astinet,Budi Santoso
+BALIKPAPAN,Direct,B2B,21.0,22.4,230,245,5,2026,Balikpapan,Aktif,PT Pelindo IV,Astinet,Rizky Pratama
+KALBAR,Direct,HSI,29.0,27.8,330,316,5,2026,Pontianak,Aktif,PT Khatulistiwa Utama,IndiHome 100Mbps,Dewi Lestari
+KALSELTENG,Mitra,WMS,13.0,12.4,160,150,5,2026,Palangkaraya,Aktif,UD Palangka Jaya,SME,Ahmad Yusuf
+KALTIMTARA,Direct,HSI,24.0,23.0,270,258,5,2026,Tarakan,Aktif,PT Tarakan Net,IndiHome 100Mbps,Budi Santoso
+BALIKPAPAN,Online,WMS,12.0,11.8,150,148,6,2026,Balikpapan,Aktif,UD Sepinggan Abadi,SME,Rizky Pratama
+KALBAR,Mitra,B2B,23.0,24.5,260,278,6,2026,Singkawang,Aktif,PT Borneo Barat,Astinet,Dewi Lestari
+KALSELTENG,Direct,HSI,31.0,29.5,350,332,6,2026,Banjarmasin,Aktif,PT Banua Digital,IndiHome 100Mbps,Ahmad Yusuf
+KALTIMTARA,Direct,B2B,20.0,21.0,220,232,6,2026,Samarinda,Aktif,PT Mahakam Telkom,Astinet,Budi Santoso
+BALIKPAPAN,Direct,HSI,26.0,25.8,295,290,7,2026,Balikpapan,Aktif,PT Borneo Jaya,IndiHome 100Mbps,Rizky Pratama
+KALBAR,Online,WMS,14.0,13.9,165,160,7,2026,Pontianak,Aktif,UD Khatulistiwa Dua,SME,Dewi Lestari
+KALSELTENG,Mitra,B2B,19.0,20.6,210,228,7,2026,Banjarmasin,Aktif,PT Barito Energi,Astinet,Ahmad Yusuf
+KALTIMTARA,Direct,HSI,28.0,27.1,315,304,7,2026,Samarinda,Aktif,PT Mahakam Bersinar,IndiHome 100Mbps,Budi Santoso
+BALIKPAPAN,Mitra,B2B,22.0,23.8,240,258,8,2026,Balikpapan,Aktif,PT Pertamina RU V,Astinet,Rizky Pratama
+KALBAR,Direct,HSI,30.0,28.9,335,322,8,2026,Pontianak,Aktif,PT Kapuas Digital,IndiHome 100Mbps,Dewi Lestari
+KALSELTENG,Online,WMS,13.0,12.6,160,154,8,2026,Palangkaraya,Aktif,UD Intan Barito,SME,Ahmad Yusuf
+KALTIMTARA,Mitra,B2B,18.0,19.4,205,219,8,2026,Tarakan,Aktif,PT Tarakan Energi,Astinet,Budi Santoso

@@ -73,8 +73,7 @@ export default function LoginPage() {
                 <div className="login-loading-overlay">
                     <div className="loading-content">
                         <div className="loading-logo">
-                            <span className="logo-text">TELKOM</span>
-                            <span className="logo-sub">Dashboard</span>
+                            <img src="/logo-telkom.png" alt="Telkom" className="loading-logo-img" />
                         </div>
                         <div className="loading-bar">
                             <div className="loading-bar-fill" style={{ width: `${Math.min(loadingProgress, 100)}%` }} />
@@ -92,7 +91,7 @@ export default function LoginPage() {
             <div className="login-container">
                 <div className="login-header">
                     <div className="login-logo">
-                        <div className="login-logo-icon"><span>T</span></div>
+                        <img src="/logo-telkom.png" alt="Telkom" className="login-logo-img" />
                     </div>
                     <h1>Dashboard Telkom</h1>
                     <p className="login-tagline">Monitoring Regional 4 Kalimantan</p>
@@ -142,7 +141,7 @@ export default function LoginPage() {
 
                 <div className="login-footer">
                     <p>Telkom Regional 4 Kalimantan</p>
-                    <p className="copyright">© 2025 Cloud Computing — ITK</p>
+                    <p className="copyright">© 2025 Cloud Computing · ITK</p>
                 </div>
             </div>
         </div>

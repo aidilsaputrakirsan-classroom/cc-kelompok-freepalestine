@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ChartCard, LineChart, BarChart, DonutChart } from '../../components/Charts';
 import { salesApi, inboxApi } from '../../services/api';
-import { TrendingUp, TrendingDown, Package, Inbox, DollarSign, Activity } from 'lucide-react';
+import { TrendingUp, Package, DollarSign, Activity } from 'lucide-react';
+import { useDataUploadEvent, getLastUpload } from '../../utils/uploadEvents';
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
 const WITELS = ['BALIKPAPAN', 'KALBAR', 'KALSELTENG', 'KALTIMTARA'];
@@ -15,17 +16,49 @@ const witelColors = {
 
 const formatRupiah = (value) => `Rp ${Number(value).toFixed(2)} M`;
 
+const CURRENT_YEAR = new Date().getFullYear();
+// Opsi tahun yang ditawarkan di filter: mundur 3 tahun, maju 1 tahun
+// supaya user bisa selalu melihat tahun yang relevan.
+const YEAR_OPTIONS = (() => {
+    const years = new Set();
+    for (let y = CURRENT_YEAR + 1; y >= CURRENT_YEAR - 3; y -= 1) years.add(y);
+    const last = getLastUpload();
+    if (last?.year) years.add(last.year);
+    return Array.from(years).sort((a, b) => b - a);
+})();
+
 export default function HomeDashboard() {
     const [summary, setSummary] = useState(null);
     const [monthlyData, setMonthlyData] = useState([]);
     const [inboxStats, setInboxStats] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [filterYear, setFilterYear] = useState(2025);
+    // Tahun default mengikuti upload terakhir kalau ada, kalau tidak
+    // pakai tahun berjalan.
+    const [filterYear, setFilterYear] = useState(() => {
+        const last = getLastUpload();
+        return last?.year || CURRENT_YEAR;
+    });
     const [filterWitel, setFilterWitel] = useState('');
+    const [extraYears, setExtraYears] = useState([]);
 
     useEffect(() => {
         loadData();
     }, [filterYear, filterWitel]);
+
+    // Auto-refresh setelah ada upload di halaman Upload Data Source.
+    // Kalau file yang di-upload mengandung tahun (mis. sample_revenue_2026),
+    // pindahkan filter tahun ke sana supaya user langsung lihat datanya.
+    useDataUploadEvent((detail) => {
+        if (detail?.year && detail.year !== filterYear) {
+            setExtraYears((prev) => prev.includes(detail.year) ? prev : [...prev, detail.year]);
+            setFilterYear(detail.year); // triggers loadData via useEffect
+        } else {
+            loadData();
+        }
+    });
+
+    const yearList = Array.from(new Set([...YEAR_OPTIONS, ...extraYears, filterYear]))
+        .sort((a, b) => b - a);
 
     const loadData = async () => {
         setLoading(true);
@@ -102,8 +135,7 @@ export default function HomeDashboard() {
                 <div className="filter-group">
                     <label>Tahun</label>
                     <select value={filterYear} onChange={(e) => setFilterYear(Number(e.target.value))}>
-                        <option value={2025}>2025</option>
-                        <option value={2024}>2024</option>
+                        {yearList.map((y) => <option key={y} value={y}>{y}</option>)}
                     </select>
                 </div>
                 <div className="filter-group">
@@ -132,7 +164,7 @@ export default function HomeDashboard() {
 
             {/* Charts Row 1: Line + Bar */}
             <div className="dashboard-row">
-                <ChartCard title={`Trend Revenue YTD ${filterYear}`} subtitle={filterWitel || 'Semua Witel — Regional 4'}>
+                <ChartCard title={`Trend Revenue YTD ${filterYear}`} subtitle={filterWitel || 'Semua Witel · Regional 4'}>
                     <LineChart
                         data={monthlyData}
                         lines={lineChartLines}

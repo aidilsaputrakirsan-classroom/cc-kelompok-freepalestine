@@ -1,25 +1,37 @@
 import os
 import uuid
+from typing import List
 from datetime import datetime, timezone
 from dotenv import load_dotenv
 from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 
 from database import engine, get_db
-from models import Base, User, SalesData, InboxItem, DataSource, Telda
+from models import Base, User, SalesData, InboxItem, DataSource, Telda, AuditLog
 from schemas import (
     SalesCreate, SalesUpdate, SalesResponse, SalesListResponse,
     InboxCreate, InboxUpdate, InboxResponse, InboxListResponse,
     UserCreate, UserResponse, LoginRequest, TokenResponse,
-    ChangePasswordRequest, DataSourceResponse, DataSourceListResponse,
+    ChangePasswordRequest,
+    UserAdminCreate, UserAdminUpdate,
+    DataSourceResponse, DataSourceListResponse,
     TeldaResponse, NotificationItem,
+    AuditLogResponse, AuditLogListResponse,
 )
 from auth import create_access_token, get_current_user, hash_password, verify_password
 import crud
 from upload import parse_file, map_sales_rows, map_inbox_rows
+
+
+# ==================== ADMIN GUARD ====================
+def require_admin(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Akses ditolak: hanya admin")
+    return current_user
 
 load_dotenv()
 
@@ -39,8 +51,29 @@ app.add_middleware(CORSMiddleware, allow_origins=origins_list, allow_credentials
 
 # ==================== HEALTH ====================
 @app.get("/health")
-def health_check():
-    return {"status": "healthy", "version": "2.5.0", "service": "dashboard-telkom-api"}
+def health_check(db: Session = Depends(get_db)):
+    """Health check endpoint — cek status service + koneksi database.
+
+    Return 200 jika semua komponen sehat, 503 jika ada komponen yang gagal.
+    Dipakai oleh load balancer / orchestrator (Docker, Railway) untuk
+    menentukan apakah container siap menerima trafik.
+    """
+    health = {
+        "status": "healthy",
+        "service": "dashboard-telkom-api",
+        "version": "2.5.0",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+    }
+
+    try:
+        db.execute(text("SELECT 1"))
+        health["database"] = "connected"
+    except Exception as exc:
+        health["status"] = "unhealthy"
+        health["database"] = f"error: {str(exc)[:120]}"
+
+    status_code = 200 if health["status"] == "healthy" else 503
+    return JSONResponse(content=health, status_code=status_code)
 
 
 # ==================== AUTH ====================
@@ -57,6 +90,7 @@ def login(login_data: LoginRequest, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=401, detail="Email atau password salah")
     token = create_access_token(data={"sub": str(user.id)})
+    crud.log_audit(db, user, "login", detail=f"User '{user.email}' berhasil login")
     return {"access_token": token, "token_type": "bearer", "user": user}
 
 @app.get("/auth/me", response_model=UserResponse)
@@ -69,8 +103,8 @@ def change_password(data: ChangePasswordRequest, db: Session = Depends(get_db), 
         raise HTTPException(status_code=400, detail="Password lama salah")
     current_user.hashed_password = hash_password(data.new_password)
     db.commit()
+    crud.log_audit(db, current_user, "change_password", detail="User mengubah password")
     return {"message": "Password berhasil diubah"}
-
 
 # ==================== SALES / REVENUE ====================
 @app.post("/sales", response_model=SalesResponse, status_code=201)
@@ -78,7 +112,7 @@ def create_sales(data: SalesCreate, db: Session = Depends(get_db), current_user:
     return crud.create_sales(db=db, data=data, user_id=current_user.id)
 
 @app.get("/sales", response_model=SalesListResponse)
-def list_sales(skip: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100),
+def list_sales(skip: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=10000),
                witel: str = Query(None), product: str = Query(None),
                year: int = Query(None), month: int = Query(None),
                search: str = Query(None), datasource_id: int = Query(None),
@@ -139,13 +173,15 @@ def create_inbox(data: InboxCreate, db: Session = Depends(get_db), current_user:
     return crud.create_inbox(db=db, data=data, user_id=current_user.id)
 
 @app.get("/inbox", response_model=InboxListResponse)
-def list_inbox(skip: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=100),
+def list_inbox(skip: int = Query(0, ge=0), limit: int = Query(20, ge=1, le=10000),
                status: str = Query(None), priority: str = Query(None),
                witel: str = Query(None), search: str = Query(None),
+               category: str = Query(None, description="Filter tiket berdasarkan kategori (mis. 'network', 'billing')"),
                datasource_id: int = Query(None),
                db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     return crud.get_inbox_list(db=db, skip=skip, limit=limit, status=status,
-                               priority=priority, witel=witel, search=search, datasource_id=datasource_id)
+                               priority=priority, witel=witel, search=search,
+                               category=category, datasource_id=datasource_id)
 
 @app.get("/inbox/stats")
 def inbox_stats(witel: str = Query(None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -177,12 +213,20 @@ async def upload_sales(file: UploadFile = File(...), db: Session = Depends(get_d
     content = await file.read()
     try:
         rows = parse_file(content, file.filename)
+        mapped, errors = map_sales_rows(rows)
     except ValueError as e:
+        # Header/format tidak sesuai skema Revenue Analytics.
         raise HTTPException(status_code=400, detail=str(e))
 
-    mapped, errors = map_sales_rows(rows)
     if not mapped:
-        raise HTTPException(status_code=400, detail=f"Tidak ada data valid. Errors: {errors}")
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Tidak ada baris data yang valid. File tidak akan disimpan. "
+                "Detail per baris: " + "; ".join(errors[:5])
+                + ("..." if len(errors) > 5 else "")
+            ),
+        )
 
     ds = DataSource(name=file.filename, file_type=file.filename.rsplit(".", 1)[-1].lower(),
                     row_count=len(mapped), target_table="sales", uploaded_by=current_user.id)
@@ -193,20 +237,35 @@ async def upload_sales(file: UploadFile = File(...), db: Session = Depends(get_d
         db.add(item)
     db.commit()
 
-    return {"message": f"Berhasil import {len(mapped)} data revenue", "datasource_id": ds.id,
-            "row_count": len(mapped), "errors": errors}
+    crud.log_audit(db, current_user, "upload_sales", entity_type="file", entity_id=ds.id,
+                   detail=f"Upload file revenue '{file.filename}' ({len(mapped)} baris valid)")
+
+    return {
+        "message": f"Berhasil import {len(mapped)} data revenue. Data otomatis tampil di menu Revenue Analytics.",
+        "datasource_id": ds.id,
+        "row_count": len(mapped),
+        "errors": errors,
+        "target": "revenue",
+    }
 
 @app.post("/upload/inbox")
 async def upload_inbox(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     content = await file.read()
     try:
         rows = parse_file(content, file.filename)
+        mapped, errors = map_inbox_rows(rows)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-    mapped, errors = map_inbox_rows(rows)
     if not mapped:
-        raise HTTPException(status_code=400, detail=f"Tidak ada data valid. Errors: {errors}")
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Tidak ada baris data yang valid. File tidak akan disimpan. "
+                "Detail per baris: " + "; ".join(errors[:5])
+                + ("..." if len(errors) > 5 else "")
+            ),
+        )
 
     ds = DataSource(name=file.filename, file_type=file.filename.rsplit(".", 1)[-1].lower(),
                     row_count=len(mapped), target_table="inbox", uploaded_by=current_user.id)
@@ -217,8 +276,16 @@ async def upload_inbox(file: UploadFile = File(...), db: Session = Depends(get_d
         db.add(item)
     db.commit()
 
-    return {"message": f"Berhasil import {len(mapped)} tiket inbox", "datasource_id": ds.id,
-            "row_count": len(mapped), "errors": errors}
+    crud.log_audit(db, current_user, "upload_inbox", entity_type="file", entity_id=ds.id,
+                   detail=f"Upload file inbox '{file.filename}' ({len(mapped)} baris valid)")
+
+    return {
+        "message": f"Berhasil import {len(mapped)} tiket. Data otomatis tampil di menu Customer Care & NPS.",
+        "datasource_id": ds.id,
+        "row_count": len(mapped),
+        "errors": errors,
+        "target": "inbox",
+    }
 
 @app.get("/datasources", response_model=DataSourceListResponse)
 def list_datasources(target_table: str = Query(None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -337,9 +404,68 @@ def team_info():
     return {
         "team": "cloud-team-freepalestine",
         "project": "Dashboard Revenue Telkom Regional 4 Kalimantan",
+        "architecture": {
+            "current": "Monolith (FastAPI + PostgreSQL + React)",
+            "evolution": [
+                {"phase": "Phase 1", "name": "Monolith", "desc": "Satu backend FastAPI + PostgreSQL + satu SPA React."},
+                {"phase": "Phase 2", "name": "Microservices", "desc": "Pisahkan modul: Auth Service, Sales Service, Inbox Service, Upload Service."},
+                {"phase": "Phase 3", "name": "Cloud Deployment", "desc": "Containerize dengan Docker, deploy ke AWS/GCP dengan K8s + managed PostgreSQL."},
+            ],
+            "tech_stack": {
+                "backend": ["Python 3.11", "FastAPI", "SQLAlchemy", "Pydantic", "PostgreSQL", "python-jose (JWT)", "bcrypt"],
+                "frontend": ["React 18", "Vite", "React Router", "Recharts", "Axios", "Lucide Icons", "Native CSS"],
+                "infra": ["Docker", "Nginx (reverse-proxy)", "GitHub Actions (CI/CD)"],
+            },
+        },
         "members": [
             {"name": "Ariel Itsbat Nurhaq", "nim": "10231018", "role": "Lead Backend & Lead Frontend"},
             {"name": "Raditya Yudianto", "nim": "10231076", "role": "Lead QA & Docs"},
             {"name": "Muhammad Khoiruddin Marzuq", "nim": "10231065", "role": "Lead DevOps"},
         ],
     }
+
+
+# ==================== LEADERBOARD ====================
+@app.get("/leaderboard")
+def leaderboard(year: int = Query(None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    return crud.get_leaderboard(db=db, year=year)
+
+
+# ==================== USER MANAGEMENT (ADMIN) ====================
+@app.get("/users", response_model=List[UserResponse])
+def list_users(db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
+    return crud.list_users(db=db)
+
+@app.post("/users", response_model=UserResponse, status_code=201)
+def admin_create_user(data: UserAdminCreate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    u = crud.admin_create_user(db=db, data=data)
+    if not u:
+        raise HTTPException(status_code=400, detail="Email sudah terdaftar")
+    crud.log_audit(db, admin, "create_user", entity_type="user", entity_id=u.id,
+                   detail=f"Admin membuat user '{u.email}' (role={u.role})")
+    return u
+
+@app.put("/users/{user_id}", response_model=UserResponse)
+def admin_update_user(user_id: int, data: UserAdminUpdate, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    u = crud.admin_update_user(db=db, user_id=user_id, data=data)
+    if not u:
+        raise HTTPException(status_code=404, detail="User tidak ditemukan")
+    crud.log_audit(db, admin, "update_user", entity_type="user", entity_id=u.id,
+                   detail=f"Admin mengupdate user '{u.email}'")
+    return u
+
+@app.delete("/users/{user_id}", status_code=204)
+def admin_delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(require_admin)):
+    if admin.id == user_id:
+        raise HTTPException(status_code=400, detail="Tidak bisa menghapus akun sendiri")
+    if not crud.admin_delete_user(db=db, user_id=user_id):
+        raise HTTPException(status_code=404, detail="User tidak ditemukan")
+    crud.log_audit(db, admin, "delete_user", entity_type="user", entity_id=user_id)
+
+
+# ==================== AUDIT LOGS ====================
+@app.get("/audit-logs", response_model=AuditLogListResponse)
+def list_audit_logs(skip: int = Query(0, ge=0), limit: int = Query(50, ge=1, le=200),
+                    action: str = Query(None), user_id: int = Query(None),
+                    db: Session = Depends(get_db), _admin: User = Depends(require_admin)):
+    return crud.get_audit_logs(db=db, skip=skip, limit=limit, action=action, user_id=user_id)
