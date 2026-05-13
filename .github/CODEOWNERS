@@ -1,0 +1,22 @@
+# CODEOWNERS - Dashboard Telkom TREG 4
+# Gunakan username GitHub asli tim agar auto-review berjalan.
+
+# Backend - Lead Backend
+/backend/ @itsbat-wq
+
+# Frontend - Lead Frontend
+/frontend/ @itsbat-wq
+
+# Docker & Infra - Lead DevOps
+docker-compose.yml @Mukhoma
+docker-compose.prod.yml @Mukhoma
+/backend/Dockerfile @Mukhoma
+/frontend/Dockerfile @Mukhoma
+Makefile @Mukhoma
+
+# CI/CD files - Lead CI/CD
+/.github/ @Mukhoma
+
+# Documentation - Lead QA & Docs
+README.md @Rhadide
+/docs/ @Rhadide

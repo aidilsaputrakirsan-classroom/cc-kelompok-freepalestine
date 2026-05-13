@@ -1,0 +1,53 @@
+# Docker Compose — Dashboard Telkom Regional 4 Kalimantan
+# Menjalankan 3 container: PostgreSQL + Backend (FastAPI) + Frontend (React)
+
+services:
+  # ==================== DATABASE ====================
+  db:
+    image: postgres:16-alpine
+    container_name: telkom-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres123
+      POSTGRES_DB: telkom_dashboard
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ==================== BACKEND ====================
+  backend:
+    build: ./backend
+    container_name: telkom-backend
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres123@db:5432/telkom_dashboard
+      SECRET_KEY: super-secret-key-for-jwt-minimum-32-chars
+      ALGORITHM: HS256
+      ACCESS_TOKEN_EXPIRE_MINUTES: "60"
+      ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:3000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ==================== FRONTEND ====================
+  frontend:
+    build: ./frontend
+    container_name: telkom-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  pgdata:
+    driver: local

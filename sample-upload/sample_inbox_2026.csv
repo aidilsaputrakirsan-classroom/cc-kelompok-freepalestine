@@ -1,0 +1,21 @@
+title,witel,status,priority,description,category,assigned_to
+Gangguan IndiHome area Sepinggan,BALIKPAPAN,in_progress,high,Koneksi putus sejak pagi di cluster Sepinggan,Network,Tim Teknisi BPN
+Keluhan lambat koneksi malam hari,KALBAR,pending,medium,Pelanggan melaporkan throughput turun saat peak hour,Performance,Tim NOC
+ODP penuh RT 05,KALSELTENG,pending,high,Permintaan pasang baru tertahan karena ODP full,Infrastructure,Tim Akses
+Modem restart berulang,KALTIMTARA,completed,low,Sudah diganti modem baru dan stabil,Hardware,Tim Teknisi SMD
+Pemadaman terjadwal fiber Samarinda,KALTIMTARA,completed,medium,Pemeliharaan preventif jalur fiber,Maintenance,Tim Jaringan
+Escalation B2B Astinet PT Borneo,BALIKPAPAN,in_progress,critical,SLA down 4 jam akibat cut fiber,B2B Support,Manajer Teknik
+Laporan FTTH buram di Pontianak,KALBAR,in_progress,medium,Sinyal optik redup pada 120 pelanggan,Network,Tim NOC
+Permintaan upgrade bandwidth UMKM,KALSELTENG,pending,low,Pelanggan UMKM minta upgrade paket,Sales,Tim AM
+Kerusakan STO Palangkaraya,KALSELTENG,in_progress,critical,Power failure pada STO perlu genset,Power,Tim Power
+Tiket duplikat dari pelanggan korporat,KALTIMTARA,rejected,low,Tiket salah input ditutup,Admin,Tim Helpdesk
+Slowdown malam di Tarakan,KALTIMTARA,pending,medium,Saturation trunk pada jam 20 sampai 22 WIB,Performance,Tim NOC
+Migrasi IP Transit B2B,BALIKPAPAN,completed,high,Migrasi IP transit sukses tanpa downtime,B2B Support,Tim NOC
+Ganti MSAN Banjarmasin,KALSELTENG,completed,high,Penggantian MSAN menambah kapasitas 256 line,Infrastructure,Tim Akses
+Komplain tagihan WMS,KALBAR,rejected,low,Tagihan sudah sesuai setelah verifikasi,Billing,Tim CS
+Permintaan instalasi baru 50 SSL,BALIKPAPAN,pending,medium,Batch pemasangan HSI cluster baru,Sales,Tim Akses
+Gangguan Indihome bulk Singkawang,KALBAR,in_progress,high,500 pelanggan offline karena kerusakan OLT,Network,Tim NOC
+Survey NPS tahunan,KALTIMTARA,completed,low,Laporan NPS 78 untuk Q1,Survey,Tim Marketing
+Penanganan komplain sosial media,BALIKPAPAN,in_progress,medium,Keluhan viral di Twitter ditangani CS digital,Support,Tim CS
+Pasang baru FTTH kompleks elit,KALSELTENG,completed,medium,Instalasi 80 pelanggan tuntas H+2,Installation,Tim Akses
+Penggantian kabel drop rusak,KALTIMTARA,completed,low,Kabel drop putus akibat pohon tumbang,Maintenance,Tim Akses

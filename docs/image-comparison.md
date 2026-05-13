@@ -1,54 +1,64 @@
-# 📊 Docker Image Size Comparison — Modul 5
+# Docker Image Comparison — Modul 6 & 7 (Lead CI/CD)
 
-**Dibuat oleh:** Raditya Yudianto (Lead QA & Docs)  
-**Tanggal:** 31 Maret 2026  
-**Tujuan:** Membandingkan ukuran base image Python untuk pemilihan image yang optimal
-
----
-
-## Hasil Perbandingan
-
-| Base Image | Ukuran | Deskripsi |
-|-----------|--------|-----------|
-| `python:3.12` | ~1.02 GB | Full Debian — semua tools termasuk |
-| `python:3.12-slim` | ~150 MB | Debian minimal — tools tidak perlu dihapus |
-| `python:3.12-alpine` | ~57 MB | Alpine Linux — sangat ringan, minimal |
-
-> Data ukuran di atas berdasarkan `docker pull` masing-masing image dan dicek via `docker images`.
+Dokumen ini merangkum ukuran image yang relevan untuk tugas:
+- Modul 6: optimasi image (multi-stage frontend)
+- Modul 7: finalisasi workflow publish image versi + `latest`
 
 ---
 
-## Perbandingan Detail
+## 1) Ukuran image aplikasi (hasil cek lokal)
 
-| Aspek | `python:3.12` | `python:3.12-slim` | `python:3.12-alpine` |
-|-------|--------------|-------------------|---------------------|
-| **Ukuran** | ~1.02 GB | ~150 MB | ~57 MB |
-| **Base OS** | Debian (full) | Debian (minimal) | Alpine Linux |
-| **Build time** | Lambat | Sedang | Cepat |
-| **Kompatibilitas** | ✅ Sangat tinggi | ✅ Tinggi | ⚠️ Perlu penyesuaian |
-| **Package manager** | apt | apt | apk |
-| **Cocok untuk** | Development | Production | Microservices ringan |
+Perintah yang dipakai:
 
----
+```bash
+docker images
+```
 
-## Pilihan untuk Proyek Ini
+Cuplikan image project:
 
-**Digunakan: `python:3.12-slim`** ✅
-
-**Alasan:**
-1. **Ukuran 7x lebih kecil** dari `python:3.12` (150 MB vs 1.02 GB)
-2. **Kompatibilitas tinggi** — tidak perlu penyesuaian seperti Alpine
-3. **Cocok untuk production** — ringan tapi tetap stabil
-4. **Library Python** seperti `psycopg2-binary` dan `cryptography` berjalan tanpa masalah di slim
-
-**Mengapa tidak Alpine?**
-Alpine menggunakan `musl libc` bukan `glibc`, sehingga beberapa package Python (terutama yang butuh compile C) bisa bermasalah. `psycopg2-binary` dan `cryptography` (untuk JWT) kadang error di Alpine.
+| Image | Tag | Disk Usage (lokal) | Catatan |
+|------|-----|---------------------|---------|
+| `cloudapp-backend` | `v2` | ~208 MB | Backend FastAPI + deps Python |
+| `cloudapp-backend` | `latest` | ~208 MB | Tag tambahan untuk release terbaru |
+| `cloudapp-frontend` | `latest` | ~73.9 MB | Hasil multi-stage (`node:20-alpine` -> `nginx:alpine`) |
+| `postgres` | `16-alpine` | ~395 MB | Image DB official, dipakai sebagai service compose |
 
 ---
 
-## Kesimpulan
+## 2) Dampak optimasi multi-stage frontend
 
-Untuk proyek **cloudapp-backend**, `python:3.12-slim` adalah pilihan terbaik karena:
-- Menghemat **~870 MB** dibanding `python:3.12` full
-- Lebih stabil daripada Alpine untuk dependency yang kompleks
-- Build image akhir sekitar **~200 MB** (base + dependencies)
+Arsitektur build frontend:
+1. Stage builder: install dependency + `npm run build`
+2. Stage runtime: hanya copy `dist` ke Nginx
+
+Efek:
+- Build tool (`node_modules`, source build-only) tidak ikut ke runtime image.
+- Runtime image lebih kecil dibanding single-stage build.
+- Start-up deployment lebih cepat dan konsumsi bandwidth registri lebih rendah.
+
+---
+
+## 3) Standar tagging untuk rilis
+
+Tag yang dipakai untuk push ke Docker Hub:
+
+- Backend: `cloudapp-backend:v2` dan `cloudapp-backend:latest`
+- Frontend: `cloudapp-frontend:v1` dan `cloudapp-frontend:latest`
+
+Pola ini membuat:
+- versi rilis tetap bisa di-pin (`v1`, `v2`)
+- deployment cepat tetap bisa pakai tag bergerak `latest`
+
+---
+
+## 4) Catatan interpretasi ukuran
+
+Nilai `docker images` bisa berbeda antar mesin karena:
+- layer sharing antar image
+- cache build lokal
+- versi Docker engine yang berbeda
+
+Untuk evaluasi CI/CD, yang penting adalah:
+- tren ukuran image stabil/menurun
+- runtime image frontend tetap ringan
+- tagging versi dan `latest` konsisten saat publish

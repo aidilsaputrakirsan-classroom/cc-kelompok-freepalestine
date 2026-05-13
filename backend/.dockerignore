@@ -1,28 +1,7 @@
-# Secrets & local env (never bake into image)
-.env
-.env.*
-
-# Python
 __pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-venv/
+*.pyc
+.env
+.env.docker
 .venv/
-*.egg-info/
-.eggs/
-dist/
-build/
-
-# Git & IDE
-.git
-.gitignore
-.idea/
-.vscode/
-
-# Tests & misc
-.pytest_cache/
-.coverage
-htmlcov/
-*.md
+venv/
+*.log
