@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { useEffect, useCallback } from 'react';
 import { MainLayout } from './components/Layout';
 import { ToastProvider } from './components/Toast/ToastProvider';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './pages/Auth/LoginPage';
 import HomeDashboard from './pages/Dashboard/HomeDashboard';
 import RevenuePage from './pages/Revenue/RevenuePage';
@@ -60,24 +61,26 @@ function ProtectedRoute({ children }) {
 
 function App() {
     return (
-        <ToastProvider>
-            <BrowserRouter>
-                <Routes>
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-                        <Route index element={<HomeDashboard />} />
-                        <Route path="revenue" element={<RevenuePage />} />
-                        <Route path="inbox" element={<InboxPage />} />
-                        <Route path="customer-care" element={<CustomerCarePage />} />
-                        <Route path="leaderboard" element={<LeaderboardPage />} />
-                        <Route path="upload" element={<UploadPage />} />
-                        <Route path="users" element={<UsersPage />} />
-                        <Route path="about" element={<AboutPage />} />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Route>
-                </Routes>
-            </BrowserRouter>
-        </ToastProvider>
+        <ErrorBoundary showDetails={localStorage.getItem('theme') === 'debug'}>
+            <ToastProvider>
+                <BrowserRouter>
+                    <Routes>
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
+                            <Route index element={<HomeDashboard />} />
+                            <Route path="revenue" element={<RevenuePage />} />
+                            <Route path="inbox" element={<InboxPage />} />
+                            <Route path="customer-care" element={<CustomerCarePage />} />
+                            <Route path="leaderboard" element={<LeaderboardPage />} />
+                            <Route path="upload" element={<UploadPage />} />
+                            <Route path="users" element={<UsersPage />} />
+                            <Route path="about" element={<AboutPage />} />
+                            <Route path="*" element={<Navigate to="/" replace />} />
+                        </Route>
+                    </Routes>
+                </BrowserRouter>
+            </ToastProvider>
+        </ErrorBoundary>
     );
 }
 

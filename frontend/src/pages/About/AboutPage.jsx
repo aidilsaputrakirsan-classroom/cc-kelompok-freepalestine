@@ -1,6 +1,6 @@
 import {
     Info, Users, Layers, GitBranch, Database, Server, Globe, ShieldCheck,
-    Cpu, Package, Github, BookOpen,
+    Cpu, Package, BookOpen,
 } from 'lucide-react';
 
 const team = [
@@ -238,7 +238,7 @@ export default function AboutPage() {
                     display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap',
                 }}
             >
-                <Github size={18} color="var(--text-secondary)" />
+                <GitBranch size={18} color="var(--text-secondary)" />
                 <span style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>
                     Repository:
                 </span>
