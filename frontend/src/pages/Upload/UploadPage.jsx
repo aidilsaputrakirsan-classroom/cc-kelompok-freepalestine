@@ -10,62 +10,50 @@ import { useToast, extractErrorMessage } from '../../components/Toast/ToastProvi
 import { emitUpload, extractYearFromFileName } from '../../utils/uploadEvents';
 
 // Skema header wajib — harus sinkron dengan backend/upload.py
-// (SALES_COLUMNS / INBOX_COLUMNS). Dipakai untuk preflight check di
-// sisi klien supaya file yang tidak sesuai langsung ditolak tanpa
-// perlu ke server.
 const REQUIRED_HEADERS = {
     sales: ['witel', 'channel', 'product', 'revenue_target', 'revenue_actual',
         'sales_target', 'sales_actual', 'period_month', 'period_year'],
     inbox: ['title', 'witel', 'status', 'priority'],
 };
 
-// Label ramah pengguna untuk pesan error — user melihat "Target Revenue"
-// bukan "revenue_target".
 const COLUMN_LABELS = {
-    witel: 'Witel',
-    channel: 'Channel',
-    product: 'Produk',
-    revenue_target: 'Target Revenue',
-    revenue_actual: 'Realisasi Revenue',
-    sales_target: 'Target SSL',
-    sales_actual: 'Realisasi SSL',
-    period_month: 'Bulan',
-    period_year: 'Tahun',
-    title: 'Judul Tiket',
-    status: 'Status',
-    priority: 'Prioritas',
+    witel: 'Witel', channel: 'Channel', product: 'Produk',
+    revenue_target: 'Target Revenue', revenue_actual: 'Realisasi Revenue',
+    sales_target: 'Target SSL', sales_actual: 'Realisasi SSL',
+    period_month: 'Bulan', period_year: 'Tahun',
+    title: 'Judul Tiket', status: 'Status', priority: 'Prioritas',
 };
 
 const prettify = (cols) => cols.map((c) => COLUMN_LABELS[c] || c).join(', ');
 
-// Alias dipersempit — hanya nama spesifik domain Telkom, tidak ada
-// alias generik seperti "revenue" / "target" / "month" / "year"
-// yang bisa tidak sengaja cocok dengan spreadsheet bisnis umum.
 const HEADER_ALIASES = {
-    witel: ['witel', 'witel_billing'],
-    channel: ['channel'],
+    witel: ['witel', 'witel_billing'], channel: ['channel'],
     product: ['product', 'produk'],
     revenue_target: ['revenue_target', 'target_revenue'],
     revenue_actual: ['revenue_actual', 'actual_revenue'],
     sales_target: ['sales_target', 'ssl_target'],
     sales_actual: ['sales_actual', 'ssl_actual'],
-    period_month: ['period_month'],
-    period_year: ['period_year'],
-    title: ['title', 'judul'],
-    status: ['status'],
-    priority: ['priority', 'prioritas'],
+    period_month: ['period_month'], period_year: ['period_year'],
+    title: ['title', 'judul'], status: ['status'], priority: ['priority', 'prioritas'],
 };
+
+const TABS = [
+    { key: 'sales', label: 'Revenue Data', target_table: 'sales' },
+    { key: 'inbox', label: 'Customer Care / Gangguan', target_table: 'inbox' },
+    { key: 'witel', label: 'Witel Leaderboard', target_table: 'witel' },
+];
 
 const MENU_TARGET = {
     sales: { label: 'Revenue Analytics', to: '/revenue' },
     inbox: { label: 'Customer Care & NPS', to: '/customer-care' },
+    witel: { label: 'Witel Leaderboard', to: '/leaderboard' },
 };
 
 const normalizeKey = (s) => String(s || '').trim().toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
 
-// Cek preflight header: kembalikan array nama kolom yang masih kurang.
 function checkMissingHeaders(headerList, targetTable) {
     const required = REQUIRED_HEADERS[targetTable] || [];
+    if (required.length === 0) return []; // witel has no client-side check
     const normalized = new Set(headerList.map(normalizeKey).filter(Boolean));
     const missing = [];
     for (const col of required) {
@@ -91,11 +79,8 @@ function readCsvHeader(file) {
     });
 }
 
-// Baca header XLSX dengan benar: buka arsip ZIP → ambil sheet1.xml +
-// sharedStrings.xml → parse DOM untuk row pertama.
 async function readXlsxHeader(file) {
     const zip = await JSZip.loadAsync(await file.arrayBuffer());
-    // Cari file worksheet pertama. Beberapa xlsx punya nama berbeda.
     let sheetFile =
         zip.file('xl/worksheets/sheet1.xml') ||
         zip.file(/xl\/worksheets\/sheet\d+\.xml/)[0];
@@ -105,14 +90,12 @@ async function readXlsxHeader(file) {
     const parser = new DOMParser();
     const sheetDoc = parser.parseFromString(sheetXml, 'application/xml');
 
-    // Ambil sharedStrings sekali saja (jika ada).
     let sharedStrings = [];
     const ssFile = zip.file('xl/sharedStrings.xml');
     if (ssFile) {
         const ssXml = await ssFile.async('string');
         const ssDoc = parser.parseFromString(ssXml, 'application/xml');
         sharedStrings = Array.from(ssDoc.getElementsByTagName('si')).map((si) => {
-            // Bisa berupa <t> langsung atau kumpulan <r><t>...
             const ts = si.getElementsByTagName('t');
             let out = '';
             for (const t of ts) out += t.textContent || '';
@@ -120,7 +103,6 @@ async function readXlsxHeader(file) {
         });
     }
 
-    // Cari row pertama yang ada isinya.
     const rows = sheetDoc.getElementsByTagName('row');
     if (rows.length === 0) throw new Error('Worksheet kosong');
     const firstRow = rows[0];
@@ -128,7 +110,7 @@ async function readXlsxHeader(file) {
     const cells = firstRow.getElementsByTagName('c');
     const headers = [];
     for (const c of cells) {
-        const t = c.getAttribute('t'); // tipe: s, str, inlineStr, b, e, atau null (numeric)
+        const t = c.getAttribute('t');
         let value = '';
         if (t === 's') {
             const vEl = c.getElementsByTagName('v')[0];
@@ -151,12 +133,12 @@ async function readHeaders(file) {
     const name = file.name.toLowerCase();
     if (name.endsWith('.csv')) return await readCsvHeader(file);
     if (name.endsWith('.xlsx')) return await readXlsxHeader(file);
-    return null; // .xls biner (BIFF lama) — server yang memvalidasi
+    return null;
 }
 
 export default function UploadPage() {
     const toast = useToast();
-    const [targetTable, setTargetTable] = useState('sales');
+    const [activeTab, setActiveTab] = useState('sales');
     const [dragOver, setDragOver] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [result, setResult] = useState(null);
@@ -164,9 +146,10 @@ export default function UploadPage() {
     const [loading, setLoading] = useState(true);
     const fileRef = useRef(null);
 
-    const menu = useMemo(() => MENU_TARGET[targetTable], [targetTable]);
+    const currentTab = useMemo(() => TABS.find((t) => t.key === activeTab), [activeTab]);
+    const menu = useMemo(() => MENU_TARGET[activeTab], [activeTab]);
 
-    useEffect(() => { loadDatasources(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, []);
+    useEffect(() => { loadDatasources(); }, []);
 
     const loadDatasources = async () => {
         setLoading(true);
@@ -180,6 +163,11 @@ export default function UploadPage() {
         }
     };
 
+    const filteredDatasources = useMemo(
+        () => datasources.filter((d) => d.target_table === activeTab),
+        [datasources, activeTab]
+    );
+
     const uploadFile = async (file) => {
         if (!file) return;
         const allowed = ['.csv', '.xlsx', '.xls'];
@@ -191,64 +179,53 @@ export default function UploadPage() {
             return;
         }
 
-        // Preflight — cek header di sisi klien supaya file yang jelas
-        // tidak cocok (mis. Studi Kelayakan / laporan keuangan umum)
-        // langsung ditolak tanpa perlu ke server.
-        const menuLabel = targetTable === 'sales' ? 'Revenue Analytics' : 'Customer Care & NPS';
-        try {
-            const headers = await readHeaders(file);
-            if (Array.isArray(headers)) {
-                if (headers.length === 0) {
-                    const msg = `File ditolak: tidak ada header kolom yang terbaca. Skema ${menuLabel} mewajibkan kolom: ${prettify(REQUIRED_HEADERS[targetTable])}.`;
-                    setResult({ ok: false, message: msg });
-                    toast.error('Upload ditolak', msg);
-                    if (fileRef.current) fileRef.current.value = '';
-                    return;
+        // Preflight header check (only for sales/inbox)
+        if (activeTab !== 'witel') {
+            try {
+                const headers = await readHeaders(file);
+                if (Array.isArray(headers)) {
+                    if (headers.length === 0) {
+                        const msg = `File ditolak: tidak ada header kolom yang terbaca. Skema ${currentTab.label} mewajibkan kolom: ${prettify(REQUIRED_HEADERS[activeTab])}.`;
+                        setResult({ ok: false, message: msg });
+                        toast.error('Upload ditolak', msg);
+                        if (fileRef.current) fileRef.current.value = '';
+                        return;
+                    }
+                    const missing = checkMissingHeaders(headers, activeTab);
+                    if (missing.length > 0) {
+                        const msg = `File ditolak: format tidak sesuai skema ${currentTab.label}. Kolom wajib yang hilang: ${prettify(missing)}.`;
+                        setResult({ ok: false, message: msg });
+                        toast.error('Upload ditolak', msg);
+                        if (fileRef.current) fileRef.current.value = '';
+                        return;
+                    }
                 }
-                const missing = checkMissingHeaders(headers, targetTable);
-                if (missing.length > 0) {
-                    const msg = `File ditolak: format tidak sesuai skema ${menuLabel}. Kolom wajib yang hilang: ${prettify(missing)}.`;
-                    setResult({ ok: false, message: msg });
-                    toast.error('Upload ditolak', msg);
-                    if (fileRef.current) fileRef.current.value = '';
-                    return;
-                }
+            } catch (e) {
+                const msg = `File ditolak: tidak bisa membaca header (${e?.message || 'format rusak'}).`;
+                setResult({ ok: false, message: msg });
+                toast.error('Upload ditolak', msg);
+                if (fileRef.current) fileRef.current.value = '';
+                return;
             }
-            // headers === null → .xls lama, biar server yang memvalidasi
-        } catch (e) {
-            const msg = `File ditolak: tidak bisa membaca header (${e?.message || 'format rusak'}). Pastikan file berupa spreadsheet standar dengan header di baris pertama.`;
-            setResult({ ok: false, message: msg });
-            toast.error('Upload ditolak', msg);
-            if (fileRef.current) fileRef.current.value = '';
-            return;
         }
 
         setUploading(true); setResult(null);
         try {
             const formData = new FormData();
             formData.append('file', file);
-            const res = targetTable === 'sales'
-                ? await uploadApi.salesFile(formData)
-                : await uploadApi.inboxFile(formData);
+            let res;
+            if (activeTab === 'sales') res = await uploadApi.salesFile(formData);
+            else if (activeTab === 'inbox') res = await uploadApi.inboxFile(formData);
+            else res = await uploadApi.witelFile(formData);
+
             setResult({
-                ok: true,
-                message: res.message,
-                rowCount: res.row_count,
-                errors: res.errors,
-                target: res.target,
+                ok: true, message: res.message,
+                rowCount: res.row_count, errors: res.errors, target: res.target,
             });
             const detectedYear = extractYearFromFileName(file.name);
             const yearInfo = detectedYear ? ` · tahun ${detectedYear} terdeteksi dari nama file` : '';
-            toast.success('Upload berhasil',
-                `${res.row_count} baris disimpan dari "${file.name}"${yearInfo}.`);
-            // Broadcast ke halaman lain (Home Dashboard, Revenue, Inbox,
-            // Customer Care, Leaderboard) supaya ikut auto-refresh.
-            emitUpload({
-                target: targetTable,
-                year: detectedYear,
-                fileName: file.name,
-                rowCount: res.row_count,
-            });
+            toast.success('Upload berhasil', `${res.row_count} baris disimpan dari "${file.name}"${yearInfo}.`);
+            emitUpload({ target: activeTab, year: detectedYear, fileName: file.name, rowCount: res.row_count });
             loadDatasources();
         } catch (err) {
             const msg = extractErrorMessage(err, 'Upload gagal: format tidak sesuai skema.');
@@ -264,6 +241,18 @@ export default function UploadPage() {
         e.preventDefault(); setDragOver(false);
         const file = e.dataTransfer.files?.[0];
         uploadFile(file);
+    };
+
+    const handleToggle = async (d) => {
+        try {
+            const res = await uploadApi.toggleDatasource(d.id);
+            setDatasources((prev) =>
+                prev.map((item) => item.id === d.id ? { ...item, is_active: res.is_active } : item)
+            );
+            toast.success(res.is_active ? 'Datasource diaktifkan' : 'Datasource dinonaktifkan', d.name);
+        } catch (err) {
+            toast.error('Gagal toggle datasource', extractErrorMessage(err));
+        }
     };
 
     const handleDelete = async (d) => {
@@ -284,32 +273,27 @@ export default function UploadPage() {
             </div>
 
             <p className="page-description">
-                Unggah data massal dalam format CSV atau XLSX. Pilih jenis data terlebih dahulu,
-                lalu <em>drag &amp; drop</em> atau klik area di bawah. File yang formatnya tidak cocok
-                dengan skema akan ditolak secara otomatis.
+                Unggah data massal dalam format CSV atau XLSX. Pilih kategori data, lalu{' '}
+                <em>drag &amp; drop</em> atau klik area di bawah.
             </p>
 
-            {/* Type selector */}
-            <div className="upload-type-selector">
-                <button
-                    className={`upload-type-btn ${targetTable === 'sales' ? 'active' : ''}`}
-                    onClick={() => { setTargetTable('sales'); setResult(null); }}
-                    type="button"
-                >
-                    <FileSpreadsheet size={16} /> Data Revenue / Sales
-                </button>
-                <button
-                    className={`upload-type-btn ${targetTable === 'inbox' ? 'active' : ''}`}
-                    onClick={() => { setTargetTable('inbox'); setResult(null); }}
-                    type="button"
-                >
-                    <FileSpreadsheet size={16} /> Data Gangguan / Inbox
-                </button>
+            {/* Tab selector */}
+            <div className="upload-tabs">
+                {TABS.map((tab) => (
+                    <button
+                        key={tab.key}
+                        className={`upload-tab ${activeTab === tab.key ? 'active' : ''}`}
+                        onClick={() => { setActiveTab(tab.key); setResult(null); }}
+                        type="button"
+                    >
+                        {tab.label}
+                    </button>
+                ))}
             </div>
 
             {/* Drop zone */}
             <div
-                className={`dropzone ${dragOver ? 'drag-over' : ''} ${uploading ? 'is-uploading' : ''}`}
+                className={`upload-dropzone ${dragOver ? 'dragover' : ''} ${uploading ? 'is-uploading' : ''}`}
                 onDragEnter={(e) => { e.preventDefault(); setDragOver(true); }}
                 onDragOver={(e) => e.preventDefault()}
                 onDragLeave={() => setDragOver(false)}
@@ -325,25 +309,25 @@ export default function UploadPage() {
                     style={{ display: 'none' }}
                     onChange={(e) => uploadFile(e.target.files?.[0])}
                 />
-                <UploadCloud size={42} />
-                <div className="dropzone-text">
-                    {uploading ? 'Mengunggah & memvalidasi...' : 'Klik di sini atau seret file CSV / XLSX ke area ini'}
+                <UploadCloud size={42} style={{ color: 'var(--accent-blue)', marginBottom: 8 }} />
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text-primary)' }}>
+                    {uploading ? 'Mengunggah & memvalidasi...' : 'Klik di sini atau seret file CSV / XLSX'}
                 </div>
-                <div className="dropzone-subtext">
-                    Target tabel: <strong>{targetTable === 'sales' ? 'SALES_DATA' : 'INBOX_ITEMS'}</strong>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>
+                    Format: CSV, XLSX · Target: <strong>{currentTab.label}</strong>
                 </div>
             </div>
 
             {/* Result banner */}
             {result && (
-                <div className={`upload-result ${result.ok ? 'ok' : 'err'}`}>
+                <div className={`upload-result ${result.ok ? 'ok' : 'err'}`} style={{ marginTop: 16 }}>
                     {result.ok ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
                     <div style={{ flex: 1 }}>
                         <strong>{result.message}</strong>
                         {result.rowCount !== undefined && (
                             <div>{result.rowCount} baris berhasil diimport.</div>
                         )}
-                        {result.ok && (
+                        {result.ok && menu && (
                             <div style={{ marginTop: 6 }}>
                                 <Link className="inline-link" to={menu.to}>
                                     Lihat di {menu.label} <ArrowRight size={12} />
@@ -363,41 +347,46 @@ export default function UploadPage() {
                 </div>
             )}
 
-            {/* History */}
-            <h3 className="section-subtitle">Riwayat Upload</h3>
-            <div className="table-wrapper">
-                <table className="data-table">
-                    <thead>
-                        <tr>
-                            <th>ID</th><th>Nama File</th><th>Tipe</th><th>Baris</th>
-                            <th>Target Tabel</th><th>Tanggal Upload</th><th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {loading ? (
-                            <tr><td colSpan="7" className="table-loading">Memuat...</td></tr>
-                        ) : datasources.length === 0 ? (
-                            <tr><td colSpan="7" className="table-empty">Belum ada file terunggah</td></tr>
-                        ) : datasources.map((d) => (
-                            <tr key={d.id}>
-                                <td className="number">#{d.id}</td>
-                                <td>{d.name}</td>
-                                <td><span className="product-badge">{d.file_type.toUpperCase()}</span></td>
-                                <td className="number">{d.row_count.toLocaleString('id-ID')}</td>
-                                <td><span className="witel-badge">{d.target_table}</span></td>
-                                <td className="date-cell">{new Date(d.created_at).toLocaleString('id-ID')}</td>
-                                <td>
-                                    <div className="table-actions">
-                                        <button className="btn-icon delete" onClick={() => handleDelete(d)} title="Hapus">
-                                            <Trash2 size={14} />
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            {/* Datasource list */}
+            <h3 className="section-subtitle" style={{ marginTop: 24 }}>
+                Datasource — {currentTab.label}
+            </h3>
+
+            {loading ? (
+                <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>Memuat...</div>
+            ) : filteredDatasources.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
+                    Belum ada file terunggah untuk kategori ini
+                </div>
+            ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                    {filteredDatasources.map((d) => (
+                        <div key={d.id} className="ds-item">
+                            <FileSpreadsheet size={18} style={{ color: 'var(--accent-blue)', flexShrink: 0 }} />
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                    {d.name}
+                                </div>
+                                <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 2 }}>
+                                    {d.row_count.toLocaleString('id-ID')} baris · {new Date(d.created_at).toLocaleString('id-ID')}
+                                </div>
+                            </div>
+                            <div
+                                className={`toggle-switch ${d.is_active !== false ? 'active' : ''}`}
+                                onClick={(e) => { e.stopPropagation(); handleToggle(d); }}
+                                title={d.is_active !== false ? 'Aktif — klik untuk nonaktifkan' : 'Nonaktif — klik untuk aktifkan'}
+                            />
+                            <button
+                                className="btn-icon delete"
+                                onClick={() => handleDelete(d)}
+                                title="Hapus"
+                            >
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

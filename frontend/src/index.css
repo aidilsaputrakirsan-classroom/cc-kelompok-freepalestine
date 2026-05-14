@@ -189,6 +189,16 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg-pri
 }
 .data-table tbody tr:hover { background: rgba(59,130,246,0.05); }
 .data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr.row-highlight {
+    background: rgba(16, 185, 129, 0.15) !important;
+    transition: background 0.5s ease;
+    animation: highlight-fade 3s ease-out forwards;
+}
+@keyframes highlight-fade {
+    0% { background: rgba(16, 185, 129, 0.25); }
+    70% { background: rgba(16, 185, 129, 0.12); }
+    100% { background: transparent; }
+}
 td.number { text-align: right; font-variant-numeric: tabular-nums; font-weight: 500; }
 .table-loading, .table-empty { text-align: center; padding: 40px 12px !important; color: var(--text-muted); }
 
@@ -857,6 +867,7 @@ td.number { text-align: right; font-variant-numeric: tabular-nums; font-weight: 
 @media (max-width: 900px) {
     .podium-grid { grid-template-columns: 1fr; }
     .upload-type-selector { grid-template-columns: 1fr; }
+    .upload-tabs { flex-direction: column; }
 }
 @media (max-width: 768px) {
     .sidebar { width: var(--sidebar-collapsed); }
@@ -868,3 +879,123 @@ td.number { text-align: right; font-variant-numeric: tabular-nums; font-weight: 
     .header-user-info { display: none; }
     .about-hero { flex-direction: column; text-align: center; }
 }
+
+/* ==================== PAGE ANIMATIONS ==================== */
+.page-content {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==================== KPI CARD HOVER ==================== */
+.kpi-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(59, 130, 246, 0.12);
+}
+
+/* ==================== TABLE ROW TRANSITIONS ==================== */
+.data-table tbody tr {
+    transition: background 0.2s ease;
+}
+
+/* ==================== TOGGLE SWITCH ==================== */
+.toggle-switch {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    background: var(--bg-hover);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    flex-shrink: 0;
+}
+.toggle-switch.active {
+    background: #10b981;
+}
+.toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.3s ease;
+}
+.toggle-switch.active::after {
+    transform: translateX(18px);
+}
+
+/* ==================== UPLOAD DROPZONE ==================== */
+.upload-dropzone {
+    border: 2px dashed var(--border-color);
+    border-radius: var(--radius);
+    padding: 40px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.upload-dropzone:hover, .upload-dropzone.dragover {
+    border-color: var(--accent-blue);
+    background: rgba(59, 130, 246, 0.05);
+}
+
+/* ==================== UPLOAD TABS ==================== */
+.upload-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--bg-secondary);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+}
+.upload-tab {
+    flex: 1;
+    padding: 10px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.upload-tab:hover {
+    color: var(--text-primary);
+    background: var(--bg-hover);
+}
+.upload-tab.active {
+    background: var(--accent-blue);
+    color: white;
+}
+
+/* ==================== DATASOURCE LIST ITEM ==================== */
+.ds-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+    transition: all 0.2s ease;
+    animation: fadeInUp 0.3s ease-out;
+}
+.ds-item:hover {
+    border-color: var(--accent-blue);
+}
+

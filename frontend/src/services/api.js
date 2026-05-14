@@ -92,8 +92,11 @@ export const uploadApi = {
         api.post('/upload/sales', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     inboxFile: (formData) =>
         api.post('/upload/inbox', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
+    witelFile: (formData) =>
+        api.post('/upload/witel', formData, { headers: { 'Content-Type': 'multipart/form-data' } }),
     listDatasources: (params) => api.get('/datasources', { params }),
     deleteDatasource: (id) => api.delete(`/datasources/${id}`),
+    toggleDatasource: (id) => api.patch(`/datasources/${id}/toggle`),
 };
 
 // ==================== NOTIFICATIONS ====================
