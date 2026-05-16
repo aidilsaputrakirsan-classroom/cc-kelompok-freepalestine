@@ -122,4 +122,19 @@ lint:
 test:
 	cd backend && pytest test_main.py -v
 
+ci-local-backend:
+	cd backend && python -m pip install -r requirements.txt pytest httpx pytest-cov
+	cd backend && pytest test_main.py -v --cov --cov-report=term-missing
+
+ci-local-frontend:
+	cd frontend && npm ci
+	cd frontend && npm test
+	cd frontend && npm run build
+
+ci-local-docker:
+	docker build -t cloudapp-backend:ci ./backend
+	docker build -t cloudapp-frontend:ci ./frontend
+
+ci-local: ci-local-backend ci-local-frontend ci-local-docker
+
 pr-check: compose-config build lint test
