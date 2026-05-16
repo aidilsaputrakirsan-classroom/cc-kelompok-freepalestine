@@ -4,6 +4,8 @@
 
 Dashboard monitoring revenue dan operasional Telkom Regional 4 Kalimantan, dibangun menggunakan arsitektur cloud-native microservices dengan FastAPI, React, PostgreSQL, Docker, dan CI/CD.
 
+![CI Pipeline](https://github.com/aidilsaputrakirsan-classroom/cc-kelompok-freepalestine/actions/workflows/ci.yml/badge.svg)
+
 ## 👥 Tim: Free Palestine
 
 | Nama | NIM | Role |
@@ -21,7 +23,7 @@ Dashboard monitoring revenue dan operasional Telkom Regional 4 Kalimantan, diban
 | **Auth** | JWT (python-jose + bcrypt) |
 | **Gateway** | Nginx (reverse proxy + rate limiting) |
 | **Container** | Docker, Docker Compose |
-| **CI/CD** | GitHub Actions → Railway |
+| **CI/CD** | GitHub Actions → DeployCC |
 | **Reliability** | Circuit Breaker, Retry with Exponential Backoff |
 | **Observability** | Structured JSON Logging, Correlation IDs, Metrics |
 | **Security** | Rate Limiting, Security Headers, Input Validation |
@@ -124,15 +126,18 @@ tubes-dashboard-telkom/
 │   ├── dashboard-service/            # Data microservice (:8002)
 │   └── gateway/                      # Nginx API Gateway
 ├── .github/
-│   ├── workflows/ci.yml              # CI pipeline
-│   ├── workflows/cd.yml              # CD pipeline
+│   ├── workflows/ci.yml              # CI pipeline (Modul 10)
+│   ├── workflows/cd.yml              # CD DeployCC (Modul 11)
 │   ├── CODEOWNERS                    # Auto-review
 │   └── pull_request_template.md      # PR template
+├── scripts/
+│   ├── ssh.sh / ssh.bat              # SSH via Cloudflare tunnel
+│   └── cloudflaredinstall.bat        # Install cloudflared (Windows)
 ├── docs/
 │   ├── api-contract.md               # API documentation
-│   ├── deployment-guide.md           # Deploy instructions
-│   ├── branching-strategy.md         # Git workflow
-│   └── release-notes.md              # Changelog
+│   ├── deployment-guide.md           # Deploy DeployCC + rollback
+│   ├── git-workflow.md               # Git workflow
+│   └── modul09-verification.md       # Checklist Modul 09
 ├── docker-compose.yml                # Monolith compose
 └── docker-compose.microservices.yml  # Microservices compose
 ```
@@ -165,12 +170,47 @@ tubes-dashboard-telkom/
 | GET | /metrics | Request metrics |
 | GET | /team | Info tim |
 
+## 🌐 Live Demo
+
+| Service | URL |
+|---------|-----|
+| Aplikasi (DeployCC) | https://cc-kelompok-freepalestine.akhzafachrozy.my.id _(isi dari summary Actions setelah deploy)_ |
+| API | `https://<repo-slug>.akhzafachrozy.my.id/api` |
+| API Docs (Swagger) | `https://<repo-slug>.akhzafachrozy.my.id/docs` |
+
+## 🔄 CI/CD
+
+**CI** (`.github/workflows/ci.yml`) — push/PR ke `main`:
+
+1. Lint — Ruff (backend) + ESLint (frontend)
+2. Test backend — pytest
+3. Test frontend — Vitest + production build
+4. Build Docker images
+
+**CD** (`.github/workflows/cd.yml`) — setelah **CI Pipeline** sukses di `main`:
+
+1. Build frontend (dengan `VITE_API_URL` otomatis)
+2. Deploy ke [DeployCC](https://deploycc.akhzafachrozy.my.id)
+3. Health check `/health` + ringkasan SSH/DB di Actions Summary
+
+Secret wajib: `DEPLOY_API_KEY`. Panduan: [docs/deployment-guide.md](docs/deployment-guide.md) · template: [akhzaozy/deploycc](https://github.com/akhzaozy/deploycc)
+
 ## 🧪 Testing
+
+**Backend:**
 
 ```bash
 cd backend
 pip install pytest httpx
 pytest test_main.py -v
+```
+
+**Frontend:**
+
+```bash
+cd frontend
+npm install
+npm test
 ```
 
 ## 🔀 Git Workflow & PR
@@ -224,7 +264,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 | 7 | Docker Compose Finalization | ✅ |
 | 9 | Git Workflow + CODEOWNERS + PR Template | ✅ |
 | 10 | CI Pipeline (GitHub Actions) | ✅ |
-| 11 | CD Pipeline (Railway) | ✅ |
+| 11 | CD Pipeline (DeployCC) | ✅ |
 | 12 | Microservices Decomposition | ✅ |
 | 13 | Circuit Breaker + Retry | ✅ |
 | 14 | Structured Logging + Metrics | ✅ |

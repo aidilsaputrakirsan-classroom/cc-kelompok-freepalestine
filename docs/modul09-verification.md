@@ -19,7 +19,7 @@ Dokumen ini merangkum status final implementasi Modul 09 di repository.
 
 ## 3) CD Baseline
 
-- [x] CD workflow Railway tersedia di `.github/workflows/cd.yml`
+- [x] CD workflow DeployCC tersedia di `.github/workflows/cd.yml`
 - [x] Production compose override tersedia di `docker-compose.prod.yml`
 
 ## 4) Catatan Windows

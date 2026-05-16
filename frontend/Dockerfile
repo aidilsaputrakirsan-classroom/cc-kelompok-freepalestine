@@ -12,7 +12,8 @@
 # ------------------------------------------------------------
 # STAGE 1 — Builder
 # ------------------------------------------------------------
-FROM node:18-alpine AS builder
+# Vite 8 + @vitejs/plugin-react 6 membutuhkan Node ^20.19 atau >=22.12
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
