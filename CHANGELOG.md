@@ -13,10 +13,14 @@ and this project uses Conventional Commits.
 - Add `docs/git-workflow.md` as team guide for branching, commits, and review.
 - Add `docker-compose.prod.yml` as production compose override baseline.
 - Add `make lint`, `make test`, and `make pr-check` as PR readiness targets.
+- Add Modul 10 CI pipeline: lint (Ruff + ESLint), pytest, Vitest, Docker build, PR failure comment.
+- Add Modul 11 CD: DeployCC workflow (`.github/workflows/cd.yml`), health check, SSH scripts, `docs/deployment-guide.md`.
+- Add `backend/ruff.toml` and frontend Vitest test suite (6 tests).
 
 ### Changed
 - Extend `Makefile` help output with DevOps/CI targets.
-- Update README with Git workflow and PR validation commands.
+- Update README with Git workflow, CI badge, live demo (DeployCC), and CI/CD documentation.
+- Split CI (Modul 10) and CD DeployCC (Modul 11); remove Railway deploy from workflows.
 
 ## [v1.0.0] - 2026-04-01
 

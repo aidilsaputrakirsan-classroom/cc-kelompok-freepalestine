@@ -115,6 +115,8 @@ show-image-sizes:
 
 lint:
 	npm --prefix frontend run lint
+	python -m pip install -q ruff 2>/dev/null || pip install -q ruff
+	ruff check backend/
 	python -m compileall -q backend
 
 test:
