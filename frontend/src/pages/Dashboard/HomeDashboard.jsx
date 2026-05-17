@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ChartCard, LineChart, BarChart, DonutChart } from '../../components/Charts';
-import { salesApi, inboxApi } from '../../services/api';
-import { TrendingUp, Package, DollarSign, Activity } from 'lucide-react';
+import { salesApi, inboxApi, leaderboardApi } from '../../services/api';
+import { TrendingUp, Package, DollarSign, Activity, Trophy } from 'lucide-react';
 import { useDataUploadEvent, getLastUpload } from '../../utils/uploadEvents';
 
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
@@ -31,6 +31,7 @@ export default function HomeDashboard() {
     const [summary, setSummary] = useState(null);
     const [monthlyData, setMonthlyData] = useState([]);
     const [inboxStats, setInboxStats] = useState(null);
+    const [leaderboard, setLeaderboard] = useState([]);
     const [loading, setLoading] = useState(true);
     // Tahun default mengikuti upload terakhir kalau ada, kalau tidak
     // pakai tahun berjalan.
@@ -66,14 +67,16 @@ export default function HomeDashboard() {
             const params = { year: filterYear };
             if (filterWitel) params.witel = filterWitel;
 
-            const [summaryRes, monthlyRes, inboxRes] = await Promise.all([
+            const [summaryRes, monthlyRes, inboxRes, leaderboardRes] = await Promise.all([
                 salesApi.summary(params),
                 salesApi.monthly(params),
                 inboxApi.stats(filterWitel ? { witel: filterWitel } : {}),
+                leaderboardApi.get({ year: filterYear }).catch(() => []),
             ]);
 
             setSummary(summaryRes);
             setInboxStats(inboxRes);
+            setLeaderboard(Array.isArray(leaderboardRes) ? leaderboardRes : []);
 
             // Transform monthly data for line chart
             const monthMap = {};
@@ -91,9 +94,9 @@ export default function HomeDashboard() {
 
     const kpiCards = summary ? [
         { title: 'Total Revenue Target', value: formatRupiah(summary.total_target), icon: DollarSign, color: '#3b82f6' },
-        { title: 'Total Revenue Actual', value: formatRupiah(summary.total_actual), icon: TrendingUp, color: '#10b981' },
-        { title: 'Achievement', value: `${summary.achievement}%`, icon: Activity, color: summary.achievement >= 100 ? '#10b981' : '#ef4444' },
-        { title: 'Total SSL', value: `${summary.total_ssl_actual.toLocaleString()} / ${summary.total_ssl_target.toLocaleString()}`, icon: Package, color: '#8b5cf6' },
+        { title: 'Total Revenue Actual', value: formatRupiah(summary.total_actual), icon: TrendingUp, color: '#3b82f6' },
+        { title: 'Achievement', value: `${summary.achievement}%`, icon: Activity, color: '#3b82f6' },
+        { title: 'Total SSL', value: `${summary.total_ssl_actual.toLocaleString()} / ${summary.total_ssl_target.toLocaleString()}`, icon: Package, color: '#3b82f6' },
     ] : [];
 
     const lineChartLines = filterWitel
@@ -228,6 +231,44 @@ export default function HomeDashboard() {
                                     <span className="metric-value">{summary?.total_ssl_actual?.toLocaleString()} / {summary?.total_ssl_target?.toLocaleString()}</span>
                                 </div>
                             </div>
+                        </div>
+                    </ChartCard>
+                </div>
+            )}
+
+            {/* Witel Leaderboard Summary */}
+            {leaderboard.length > 0 && (
+                <div className="dashboard-row">
+                    <ChartCard title="Witel Leaderboard" subtitle="Ranking berdasarkan performa keseluruhan">
+                        <div style={{ padding: '8px 0' }}>
+                            {leaderboard.map((item) => (
+                                <div key={item.witel} style={{
+                                    display: 'flex', alignItems: 'center', gap: 12,
+                                    padding: '10px 12px', borderRadius: 8,
+                                    background: item.rank === 1 ? 'rgba(16,185,129,0.08)' : 'transparent',
+                                    marginBottom: 4,
+                                }}>
+                                    <div style={{
+                                        width: 28, height: 28, borderRadius: '50%',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        fontSize: 12, fontWeight: 700,
+                                        background: item.rank === 1 ? '#10b981' : item.rank === 2 ? '#3b82f6' : 'var(--bg-hover)',
+                                        color: item.rank <= 2 ? '#fff' : 'var(--text-secondary)',
+                                    }}>
+                                        {item.rank === 1 ? <Trophy size={14} /> : `#${item.rank}`}
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--text-primary)' }}>{item.witel}</div>
+                                        <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+                                            NPS: {item.nps_score} · Resolution: {item.resolution_rate}%
+                                        </div>
+                                    </div>
+                                    <div style={{ textAlign: 'right' }}>
+                                        <div style={{ fontWeight: 700, fontSize: 14, color: '#10b981' }}>{item.score}</div>
+                                        <div style={{ fontSize: 10, color: 'var(--text-muted)' }}>Score</div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </ChartCard>
                 </div>

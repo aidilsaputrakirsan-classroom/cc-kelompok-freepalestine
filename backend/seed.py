@@ -52,7 +52,15 @@ def seed():
         if db.query(User).count() == 0:
             users = [
                 User(email="admin@telkom.co.id", name="Admin Dashboard", hashed_password=hash_password("admin123"), role="admin"),
-                User(email="ariel@student.itk.ac.id", name="Ariel Itsbat Nurhaq", hashed_password=hash_password("password123"), role="admin"),
+                User(email="ariel@student.itk.ac.id", name="Ariel Itsbat Nurhaq", hashed_password=hash_password("harusnya ada satu toggle lagi di menu upload data source yaitu witel leader board, jadi ada 3 total toggle yang bisa dipilih, data revenue, data gangguna lalu ada data witel leaderboard. saat ini masih hanya ada 2. 
+
+
+
+lalu di menu upload data sources tambhakan toggle aktif dan non aktif untuk data yang tampil, jadi tidak perlu upload data dan hapus untuk datanya tampil atau tidak. seperti ada fitur aktif dan non aktif di menu user dan audit log. 
+
+
+
+lalu buatkan tampilanya keseluruhanya lebih modern dan elegan dan gunakana di kpi cardnya itu satu warna saja. lalu gunakan animasi animasi yang cantik dan modern tetapi tetap halus"), role="admin"),
                 User(email="viewer@telkom.co.id", name="Viewer Telkom", hashed_password=hash_password("viewer123"), role="viewer"),
             ]
             db.add_all(users); db.commit()
