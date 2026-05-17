@@ -11,7 +11,7 @@ from sqlalchemy.sql import func
 from sqlalchemy import or_, text
 
 from database import engine, get_db
-from models import Base, User, SalesData, InboxItem, DataSource, Telda, AuditLog
+from models import Base, User, SalesData, InboxItem, DataSource, Telda, AuditLog, WitelPerformance
 from schemas import (
     SalesCreate, SalesUpdate, SalesResponse, SalesListResponse,
     InboxCreate, InboxUpdate, InboxResponse, InboxListResponse,
@@ -24,7 +24,7 @@ from schemas import (
 )
 from auth import create_access_token, get_current_user, hash_password, verify_password
 import crud
-from upload import parse_file, map_sales_rows, map_inbox_rows
+from upload import parse_file, map_sales_rows, map_inbox_rows, map_witel_rows
 
 
 # ==================== ADMIN GUARD ====================
@@ -287,6 +287,45 @@ async def upload_inbox(file: UploadFile = File(...), db: Session = Depends(get_d
         "target": "inbox",
     }
 
+@app.post("/upload/witel")
+async def upload_witel(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    content = await file.read()
+    try:
+        rows = parse_file(content, file.filename)
+        mapped, errors = map_witel_rows(rows)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    if not mapped:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Tidak ada baris data yang valid. File tidak akan disimpan. "
+                "Detail per baris: " + "; ".join(errors[:5])
+                + ("..." if len(errors) > 5 else "")
+            ),
+        )
+
+    ds = DataSource(name=file.filename, file_type=file.filename.rsplit(".", 1)[-1].lower(),
+                    row_count=len(mapped), target_table="witel", uploaded_by=current_user.id)
+    db.add(ds); db.commit(); db.refresh(ds)
+
+    for m in mapped:
+        item = WitelPerformance(**m, datasource_id=ds.id, created_by=current_user.id)
+        db.add(item)
+    db.commit()
+
+    crud.log_audit(db, current_user, "upload_witel", entity_type="file", entity_id=ds.id,
+                   detail=f"Upload file witel '{file.filename}' ({len(mapped)} baris valid)")
+
+    return {
+        "message": f"Berhasil import {len(mapped)} data witel. Data otomatis tampil di menu Witel Leaderboard.",
+        "datasource_id": ds.id,
+        "row_count": len(mapped),
+        "errors": errors,
+        "target": "witel",
+    }
+
 @app.get("/datasources", response_model=DataSourceListResponse)
 def list_datasources(target_table: str = Query(None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
     q = db.query(DataSource)
@@ -294,6 +333,16 @@ def list_datasources(target_table: str = Query(None), db: Session = Depends(get_
         q = q.filter(DataSource.target_table == target_table)
     items = q.order_by(DataSource.created_at.desc()).all()
     return {"total": len(items), "items": items}
+
+@app.patch("/datasources/{ds_id}/toggle")
+def toggle_datasource(ds_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    ds = db.query(DataSource).filter(DataSource.id == ds_id).first()
+    if not ds:
+        raise HTTPException(status_code=404, detail="DataSource not found")
+    ds.is_active = not ds.is_active
+    db.commit()
+    db.refresh(ds)
+    return {"id": ds.id, "name": ds.name, "is_active": ds.is_active}
 
 @app.delete("/datasources/{ds_id}", status_code=204)
 def delete_datasource(ds_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
@@ -304,6 +353,8 @@ def delete_datasource(ds_id: int, db: Session = Depends(get_db), current_user: U
         db.query(SalesData).filter(SalesData.datasource_id == ds_id).delete()
     elif ds.target_table == "inbox":
         db.query(InboxItem).filter(InboxItem.datasource_id == ds_id).delete()
+    elif ds.target_table == "witel":
+        db.query(WitelPerformance).filter(WitelPerformance.datasource_id == ds_id).delete()
     db.delete(ds); db.commit()
 
 
@@ -427,8 +478,69 @@ def team_info():
 
 # ==================== LEADERBOARD ====================
 @app.get("/leaderboard")
-def leaderboard(year: int = Query(None), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
-    return crud.get_leaderboard(db=db, year=year)
+def leaderboard(year: int = Query(None), month: int = Query(None),
+                db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Leaderboard Witel — data 100% dari upload file witel."""
+    active_witel_ds = [ds.id for ds in db.query(DataSource.id).filter(DataSource.is_active == True, DataSource.target_table == "witel").all()]
+    q = db.query(WitelPerformance)
+    if active_witel_ds:
+        q = q.filter(WitelPerformance.datasource_id.in_(active_witel_ds))
+    else:
+        return []
+    if year:
+        q = q.filter(WitelPerformance.period_year == year)
+    if month:
+        q = q.filter(WitelPerformance.period_month == month)
+
+    records = q.all()
+    if not records:
+        return []
+
+    # Aggregate per witel
+    witel_data = {}
+    for r in records:
+        if r.witel not in witel_data:
+            witel_data[r.witel] = {
+                "witel": r.witel, "total_pelanggan": 0, "pelanggan_baru": 0,
+                "churn": 0, "revenue_total": 0, "nps_score_sum": 0,
+                "gangguan_total": 0, "gangguan_selesai": 0, "count": 0,
+            }
+        d = witel_data[r.witel]
+        d["total_pelanggan"] += r.total_pelanggan
+        d["pelanggan_baru"] += r.pelanggan_baru
+        d["churn"] += r.churn
+        d["revenue_total"] += r.revenue_total
+        d["nps_score_sum"] += r.nps_score
+        d["gangguan_total"] += r.gangguan_total
+        d["gangguan_selesai"] += r.gangguan_selesai
+        d["count"] += 1
+
+    result = []
+    for w, d in witel_data.items():
+        nps_avg = round(d["nps_score_sum"] / max(d["count"], 1), 1)
+        resolution_rate = round((d["gangguan_selesai"] / max(d["gangguan_total"], 1)) * 100, 1)
+        # Score = weighted: NPS 30% + resolution 30% + revenue 20% + growth 20%
+        growth_rate = round((d["pelanggan_baru"] - d["churn"]) / max(d["total_pelanggan"], 1) * 100, 1)
+        score = round(nps_avg * 0.3 + resolution_rate * 0.3 + min(d["revenue_total"], 100) * 0.2 + max(growth_rate, 0) * 0.2, 1)
+        result.append({
+            "witel": w,
+            "total_pelanggan": d["total_pelanggan"],
+            "pelanggan_baru": d["pelanggan_baru"],
+            "churn": d["churn"],
+            "revenue_total": round(d["revenue_total"], 2),
+            "nps_score": nps_avg,
+            "gangguan_total": d["gangguan_total"],
+            "gangguan_selesai": d["gangguan_selesai"],
+            "resolution_rate": resolution_rate,
+            "growth_rate": growth_rate,
+            "score": score,
+        })
+
+    result.sort(key=lambda x: x["score"], reverse=True)
+    for i, r in enumerate(result):
+        r["rank"] = i + 1
+
+    return result
 
 
 # ==================== USER MANAGEMENT (ADMIN) ====================
