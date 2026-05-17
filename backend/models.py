@@ -86,3 +86,37 @@ class DataSource(Base):
     is_active = Column(Boolean, default=True)
     uploaded_by = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class AuditLog(Base):
+    """Model untuk tabel 'audit_logs' — Riwayat aktivitas user (login, CRUD, upload)."""
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    user_email = Column(String(255), nullable=True)
+    action = Column(String(50), nullable=False, index=True)  # login, logout, create_target, update_target, etc
+    entity_type = Column(String(50), nullable=True)          # target, user, sales, inbox, file
+    entity_id = Column(String(100), nullable=True)
+    detail = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), index=True)
+
+
+class WitelPerformance(Base):
+    """Model untuk tabel 'witel_performance' — Data performa Witel untuk Leaderboard."""
+    __tablename__ = "witel_performance"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    witel = Column(String(50), nullable=False, index=True)
+    total_pelanggan = Column(Integer, nullable=False, default=0)
+    pelanggan_baru = Column(Integer, nullable=False, default=0)
+    churn = Column(Integer, nullable=False, default=0)
+    revenue_total = Column(Float, nullable=False, default=0)
+    nps_score = Column(Integer, nullable=False, default=0)
+    gangguan_total = Column(Integer, nullable=False, default=0)
+    gangguan_selesai = Column(Integer, nullable=False, default=0)
+    period_month = Column(Integer, nullable=False)
+    period_year = Column(Integer, nullable=False)
+    datasource_id = Column(Integer, ForeignKey("data_sources.id", ondelete="CASCADE"), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
