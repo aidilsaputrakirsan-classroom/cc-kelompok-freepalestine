@@ -1,9 +1,20 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import or_, func
 from typing import List, Optional
-from models import User, SalesData, InboxItem
-from schemas import SalesCreate, SalesUpdate, UserCreate, InboxCreate, InboxUpdate
+from models import User, SalesData, InboxItem, AuditLog, DataSource
+from schemas import (
+    SalesCreate, SalesUpdate, UserCreate, InboxCreate, InboxUpdate,
+    UserAdminCreate, UserAdminUpdate,
+)
 from auth import hash_password, verify_password
+
+
+# ==================== HELPER: ACTIVE DATASOURCE IDS ====================
+
+def get_active_datasource_ids(db: Session, target_table: str) -> List[int]:
+    """Get IDs of active datasources for a given target table."""
+    ids = db.query(DataSource.id).filter(DataSource.is_active == True, DataSource.target_table == target_table).all()
+    return [id[0] for id in ids]
 
 
 # ==================== USER CRUD ====================
@@ -32,7 +43,10 @@ def create_sales(db: Session, data: SalesCreate, user_id: int = None) -> SalesDa
 
 def get_sales_list(db: Session, skip=0, limit=20, witel=None, product=None,
                    year=None, month=None, search=None, datasource_id=None):
-    query = db.query(SalesData)
+    active_ids = get_active_datasource_ids(db, "sales")
+    if not active_ids:
+        return {"total": 0, "items": []}
+    query = db.query(SalesData).filter(SalesData.datasource_id.in_(active_ids))
     if witel:
         query = query.filter(SalesData.witel == witel)
     if product:
@@ -80,7 +94,13 @@ def _apply_datasource_filter(query, datasource_ids: Optional[List[int]] = None):
     return query
 
 def get_sales_summary(db: Session, year=None, witel=None, datasource_ids: Optional[List[int]] = None):
-    query = db.query(SalesData)
+    active_ids = get_active_datasource_ids(db, "sales")
+    if not active_ids:
+        return {
+            "total_target": 0, "total_actual": 0, "total_ssl_target": 0,
+            "total_ssl_actual": 0, "total_records": 0, "achievement": 0,
+        }
+    query = db.query(SalesData).filter(SalesData.datasource_id.in_(active_ids))
     if year:
         query = query.filter(SalesData.period_year == year)
     if witel:
@@ -105,7 +125,10 @@ def get_sales_summary(db: Session, year=None, witel=None, datasource_ids: Option
     }
 
 def get_monthly_revenue(db: Session, year=None, witel=None, datasource_ids: Optional[List[int]] = None):
-    query = db.query(SalesData.period_month, SalesData.witel, func.sum(SalesData.revenue_actual).label("revenue"))
+    active_ids = get_active_datasource_ids(db, "sales")
+    if not active_ids:
+        return []
+    query = db.query(SalesData.period_month, SalesData.witel, func.sum(SalesData.revenue_actual).label("revenue")).filter(SalesData.datasource_id.in_(active_ids))
     if year:
         query = query.filter(SalesData.period_year == year)
     if witel:
@@ -117,13 +140,16 @@ def get_monthly_revenue(db: Session, year=None, witel=None, datasource_ids: Opti
 
 def get_sales_by_telda(db: Session, year=None, witel=None, datasource_ids: Optional[List[int]] = None):
     """Get revenue aggregated by telda (Telkom Daerah)."""
+    active_ids = get_active_datasource_ids(db, "sales")
+    if not active_ids:
+        return []
     query = db.query(
         SalesData.telda,
         SalesData.witel,
         func.sum(SalesData.revenue_actual).label("revenue"),
         func.sum(SalesData.revenue_target).label("target"),
         func.count(SalesData.id).label("count"),
-    )
+    ).filter(SalesData.datasource_id.in_(active_ids))
     if year:
         query = query.filter(SalesData.period_year == year)
     if witel:
@@ -144,6 +170,9 @@ def get_sales_by_telda(db: Session, year=None, witel=None, datasource_ids: Optio
 
 def get_sales_trend(db: Session, witel=None, datasource_ids: Optional[List[int]] = None):
     """Get yearly sales trend data for Trend Sales page."""
+    active_ids = get_active_datasource_ids(db, "sales")
+    if not active_ids:
+        return []
     query = db.query(
         SalesData.period_year,
         SalesData.period_month,
@@ -151,7 +180,7 @@ def get_sales_trend(db: Session, witel=None, datasource_ids: Optional[List[int]]
         func.sum(SalesData.revenue_actual).label("revenue"),
         func.sum(SalesData.revenue_target).label("target"),
         func.sum(SalesData.sales_actual).label("ssl"),
-    )
+    ).filter(SalesData.datasource_id.in_(active_ids))
     if witel:
         query = query.filter(SalesData.witel == witel)
     if datasource_ids:
@@ -175,14 +204,19 @@ def create_inbox(db: Session, data: InboxCreate, user_id: int = None) -> InboxIt
     return db_inbox
 
 def get_inbox_list(db: Session, skip=0, limit=20, status=None, priority=None,
-                   witel=None, search=None, datasource_id=None):
-    query = db.query(InboxItem)
+                   witel=None, search=None, category=None, datasource_id=None):
+    active_ids = get_active_datasource_ids(db, "inbox")
+    if not active_ids:
+        return {"total": 0, "items": []}
+    query = db.query(InboxItem).filter(InboxItem.datasource_id.in_(active_ids))
     if status:
         query = query.filter(InboxItem.status == status)
     if priority:
         query = query.filter(InboxItem.priority == priority)
     if witel:
         query = query.filter(InboxItem.witel == witel)
+    if category:
+        query = query.filter(InboxItem.category == category)
     if datasource_id:
         query = query.filter(InboxItem.datasource_id == datasource_id)
     if search:
@@ -214,7 +248,14 @@ def delete_inbox(db: Session, inbox_id: int) -> bool:
     return True
 
 def get_inbox_stats(db: Session, witel: str = None):
-    query = db.query(InboxItem.status, func.count(InboxItem.id).label("count"))
+    active_ids = get_active_datasource_ids(db, "inbox")
+    if not active_ids:
+        return {
+            "total": 0, "by_status": {},
+            "pending": 0, "in_progress": 0,
+            "completed": 0, "rejected": 0,
+        }
+    query = db.query(InboxItem.status, func.count(InboxItem.id).label("count")).filter(InboxItem.datasource_id.in_(active_ids))
     if witel:
         query = query.filter(InboxItem.witel == witel)
     results = query.group_by(InboxItem.status).all()

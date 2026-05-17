@@ -12,6 +12,7 @@ function ItemForm({ onSubmit, editingItem, onCancelEdit }) {
     // Jika editingItem berubah, isi form dengan datanya
     useEffect(() => {
         if (editingItem) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setFormData({
                 name: editingItem.name,
                 description: editingItem.description || "",

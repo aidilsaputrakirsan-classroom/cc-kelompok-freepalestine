@@ -1,0 +1,30 @@
+﻿commit 56afff5d09e33cece3aa1eb3c6d9879e9e0c2e76
+Merge: 140d56b db843c3
+Author: Raditya Yudianto <raditbpn05@gmail.com>
+Date:   Tue Mar 31 15:52:00 2026 +0800
+
+    Merge branch 'main' of github.com:aidilsaputrakirsan-classroom/cc-kelompok-freepalestine
+
+commit 140d56b79f8f0dd78d7d6a750ff0bfcd12d7d130
+Author: Raditya Yudianto <raditbpn05@gmail.com>
+Date:   Tue Mar 31 15:49:20 2026 +0800
+
+    docs: complete Modul 5 documentation - Docker cheatsheet, comparison, and container testing
+
+commit 37f3fcef7a90e9f10bf4590fa617fcd03b44b120
+Author: Raditya Yudianto <raditbpn05@gmail.com>
+Date:   Tue Mar 31 15:01:44 2026 +0800
+
+    docs: update README - add Docker section and update role
+
+commit 9aa43ba9728d0290675d0e5cf3304f32ada4435d
+Author: Raditya Yudianto <raditbpn05@gmail.com>
+Date:   Tue Mar 31 14:58:02 2026 +0800
+
+    docs: add image-comparison.md - python base image size analysis
+
+commit 39e5ea62bbfe4c8a2c77ec373b5c7e1829d3f0c2
+Author: Raditya Yudianto <raditbpn05@gmail.com>
+Date:   Tue Mar 31 14:56:04 2026 +0800
+
+    feat: add docker-cheatsheet.md for Docker command reference

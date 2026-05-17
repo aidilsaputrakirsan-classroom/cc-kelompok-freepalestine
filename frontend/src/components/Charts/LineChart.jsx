@@ -3,16 +3,57 @@ import {
     Tooltip, ResponsiveContainer, Area
 } from 'recharts';
 
+const formatNumber = (v, decimals = 2) => {
+    const n = Number(v);
+    if (!Number.isFinite(n)) return v;
+    return n.toFixed(decimals);
+};
+
+function CustomLineTooltip({ active, payload, label, tooltipPrefix = '', tooltipSuffix = '' }) {
+    if (!active || !payload || payload.length === 0) return null;
+
+    return (
+        <div className="recharts-tooltip">
+            <div className="recharts-tooltip-label">{label}</div>
+            <div className="recharts-tooltip-items">
+                {payload.map((entry, i) => (
+                    <div key={i} className="recharts-tooltip-item">
+                        <span
+                            className="recharts-tooltip-dot"
+                            style={{ background: entry.color || entry.stroke }}
+                        />
+                        <span
+                            className="recharts-tooltip-name"
+                            style={{ color: entry.color || entry.stroke }}
+                        >
+                            {entry.name}
+                        </span>
+                        <span className="recharts-tooltip-value">
+                            {tooltipPrefix}{formatNumber(entry.value, 2)}{tooltipSuffix}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 export default function LineChart({ data, lines, height = 300, showArea = false, tooltipPrefix = '', tooltipSuffix = '' }) {
     return (
         <ResponsiveContainer width="100%" height={height}>
             <RechartsLineChart data={data} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fill: '#94a3b8', fontSize: 11 }} />
-                <YAxis tick={{ fill: '#94a3b8', fontSize: 11 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(148, 163, 184, 0.15)" />
+                <XAxis dataKey="name" tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
+                <YAxis tick={{ fill: 'var(--text-secondary)', fontSize: 11 }} />
                 <Tooltip
-                    contentStyle={{ background: '#1e293b', border: '1px solid #334155', borderRadius: 8, color: '#f1f5f9' }}
-                    formatter={(value) => [`${tooltipPrefix}${value}${tooltipSuffix}`, '']}
+                    content={(props) => (
+                        <CustomLineTooltip
+                            {...props}
+                            tooltipPrefix={tooltipPrefix}
+                            tooltipSuffix={tooltipSuffix}
+                        />
+                    )}
+                    cursor={{ stroke: 'rgba(148, 163, 184, 0.3)', strokeWidth: 1 }}
                 />
                 {lines.map((line) => (
                     <Line

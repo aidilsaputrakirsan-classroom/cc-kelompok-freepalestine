@@ -1,5 +1,9 @@
 node_modules/
+
+# Hasil build lokal — tidak perlu, stage builder akan build ulang.
 dist/
-*.log
+build/
+
+# Environment files (jangan pernah masuk image!)
 .env
 .env.local

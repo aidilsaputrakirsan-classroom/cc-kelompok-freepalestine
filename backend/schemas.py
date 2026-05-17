@@ -27,6 +27,17 @@ class ChangePasswordRequest(BaseModel):
     old_password: str = Field(..., min_length=1)
     new_password: str = Field(..., min_length=8)
 
+class UserAdminCreate(BaseModel):
+    email: EmailStr
+    name: str = Field(..., min_length=2, max_length=100)
+    password: str = Field(..., min_length=8)
+    role: str = Field("viewer", pattern="^(admin|viewer)$")
+
+class UserAdminUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    role: Optional[str] = Field(None, pattern="^(admin|viewer)$")
+    is_active: Optional[bool] = None
+
 
 # ============================================================
 # SALES DATA SCHEMAS

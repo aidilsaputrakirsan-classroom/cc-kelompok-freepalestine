@@ -52,7 +52,15 @@ def seed():
         if db.query(User).count() == 0:
             users = [
                 User(email="admin@telkom.co.id", name="Admin Dashboard", hashed_password=hash_password("admin123"), role="admin"),
-                User(email="ariel@student.itk.ac.id", name="Ariel Itsbat Nurhaq", hashed_password=hash_password("password123"), role="admin"),
+                User(email="ariel@student.itk.ac.id", name="Ariel Itsbat Nurhaq", hashed_password=hash_password("harusnya ada satu toggle lagi di menu upload data source yaitu witel leader board, jadi ada 3 total toggle yang bisa dipilih, data revenue, data gangguna lalu ada data witel leaderboard. saat ini masih hanya ada 2. 
+
+
+
+lalu di menu upload data sources tambhakan toggle aktif dan non aktif untuk data yang tampil, jadi tidak perlu upload data dan hapus untuk datanya tampil atau tidak. seperti ada fitur aktif dan non aktif di menu user dan audit log. 
+
+
+
+lalu buatkan tampilanya keseluruhanya lebih modern dan elegan dan gunakana di kpi cardnya itu satu warna saja. lalu gunakan animasi animasi yang cantik dan modern tetapi tetap halus"), role="admin"),
                 User(email="viewer@telkom.co.id", name="Viewer Telkom", hashed_password=hash_password("viewer123"), role="viewer"),
             ]
             db.add_all(users); db.commit()
@@ -67,7 +75,7 @@ def seed():
 
         # ==================== SEED SALES DATA ====================
         if db.query(SalesData).count() == 0:
-            # Mapping witel → list telda names
+            # Mapping witel -> list telda names
             witel_teldas = {}
             for name, witel, _ in TELDA_DATA:
                 witel_teldas.setdefault(witel, []).append(name)
@@ -75,6 +83,8 @@ def seed():
             channels = ["Direct", "Mitra", "Online"]
             products = ["HSI", "B2B", "WMS"]
 
+            # Base revenue per witel (2025 sebagai basis utama).
+            # Tahun 2024 dibuat lebih rendah ~12% sebagai baseline pertumbuhan YoY.
             revenue_data = {
                 "BALIKPAPAN": {"target_base": 4.5, "actual_mult": 1.05, "ssl_base": 225},
                 "KALBAR":     {"target_base": 6.5, "actual_mult": 0.97, "ssl_base": 350},
@@ -82,32 +92,45 @@ def seed():
                 "KALTIMTARA": {"target_base": 8.3, "actual_mult": 1.11, "ssl_base": 475},
             }
 
+            # Konfigurasi multiplier per tahun (berpengaruh ke target & actual).
+            # 2024 lebih kecil (baseline), 2025 full (target yang sekarang berjalan).
+            year_configs = {
+                2024: {"scale": 0.88, "actual_noise": 0.94},
+                2025: {"scale": 1.00, "actual_noise": 1.00},
+            }
+
             sales_records = []
-            for witel, info in revenue_data.items():
-                teldas = witel_teldas.get(witel, [witel])
-                for month in range(1, 13):
-                    for product in products:
-                        prod_factor = 1.0 if product == "HSI" else (0.6 if product == "B2B" else 0.3)
-                        month_factor = 1 + (month - 1) * 0.02
+            for year, ycfg in year_configs.items():
+                for witel, info in revenue_data.items():
+                    teldas = witel_teldas.get(witel, [witel])
+                    for month in range(1, 13):
+                        for product in products:
+                            prod_factor = 1.0 if product == "HSI" else (0.6 if product == "B2B" else 0.3)
+                            month_factor = 1 + (month - 1) * 0.02
 
-                        target = round(info["target_base"] * prod_factor * month_factor, 2)
-                        actual = round(target * info["actual_mult"] * (0.95 + (month % 3) * 0.03), 2)
+                            target_base = info["target_base"] * ycfg["scale"]
+                            target = round(target_base * prod_factor * month_factor, 2)
+                            actual = round(
+                                target * info["actual_mult"] * ycfg["actual_noise"] *
+                                (0.95 + (month % 3) * 0.03),
+                                2,
+                            )
 
-                        for channel in channels:
-                            ch_factor = 0.5 if channel == "Direct" else (0.3 if channel == "Mitra" else 0.2)
-                            # Assign random telda from this witel
-                            telda_name = teldas[(month + products.index(product)) % len(teldas)]
-                            sales_records.append(SalesData(
-                                witel=witel, telda=telda_name, channel=channel, product=product,
-                                revenue_target=round(target * ch_factor, 2),
-                                revenue_actual=round(actual * ch_factor, 2),
-                                sales_target=int(info["ssl_base"] * prod_factor * ch_factor),
-                                sales_actual=int(info["ssl_base"] * prod_factor * ch_factor * info["actual_mult"]),
-                                period_month=month, period_year=2025, created_by=1,
-                            ))
+                            for channel in channels:
+                                ch_factor = 0.5 if channel == "Direct" else (0.3 if channel == "Mitra" else 0.2)
+                                telda_name = teldas[(month + products.index(product)) % len(teldas)]
+                                ssl_base = info["ssl_base"] * ycfg["scale"]
+                                sales_records.append(SalesData(
+                                    witel=witel, telda=telda_name, channel=channel, product=product,
+                                    revenue_target=round(target * ch_factor, 2),
+                                    revenue_actual=round(actual * ch_factor, 2),
+                                    sales_target=int(ssl_base * prod_factor * ch_factor),
+                                    sales_actual=int(ssl_base * prod_factor * ch_factor * info["actual_mult"] * ycfg["actual_noise"]),
+                                    period_month=month, period_year=year, created_by=1,
+                                ))
 
             db.add_all(sales_records); db.commit()
-            print(f"✅ Seeded {len(sales_records)} sales records")
+            print(f"✅ Seeded {len(sales_records)} sales records (tahun 2024 & 2025)")
 
         # ==================== SEED INBOX ====================
         if db.query(InboxItem).count() == 0:
