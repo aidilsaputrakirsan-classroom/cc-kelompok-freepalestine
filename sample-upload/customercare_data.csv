@@ -1,0 +1,16 @@
+title,witel,status,priority,description,category,assigned_to
+Gangguan jaringan fiber Balikpapan Selatan,BALIKPAPAN,in_progress,critical,Pelanggan melaporkan gangguan berulang sejak 3 hari. Area terdampak: Balikpapan Selatan estimasi 200 pelanggan.,gangguan,Teknisi Tim A
+Permintaan upgrade paket Pontianak,KALBAR,pending,high,10 pelanggan enterprise request upgrade bandwidth dari 100 Mbps ke 300 Mbps.,permintaan,AM Kalbar
+Billing dispute pelanggan Kalselteng,KALSELTENG,pending,medium,Pelanggan melaporkan tagihan ganda bulan Maret. Perlu investigasi billing system.,billing,
+Instalasi baru area Tarakan,KALTIMTARA,in_progress,medium,20 order baru PSB area Tarakan menunggu jadwal instalasi.,permintaan,Tim Instalasi
+Maintenance rutin ODP Balikpapan,BALIKPAPAN,completed,low,Scheduled maintenance untuk 50 ODP di area Balikpapan Kota.,gangguan,Teknisi Tim B
+Keluhan internet lambat Kalselteng,KALSELTENG,pending,high,Area Banjarmasin Utara melaporkan kecepatan internet di bawah SLA.,gangguan,
+Request site survey B2B Samarinda,KALTIMTARA,pending,medium,Calon pelanggan B2B membutuhkan site survey untuk gedung baru.,permintaan,AM B2B Kaltimtara
+Gangguan massal Singkawang setelah hujan,KALBAR,in_progress,critical,Putus kabel FO akibat pohon tumbang. Estimasi 500 pelanggan terdampak.,gangguan,Tim Emergency Kalbar
+Laporan NPS rendah area Kaltimtara,KALTIMTARA,pending,high,Survey NPS Q1 menunjukkan skor 45 di area Kaltimtara perlu action plan.,billing,Manager CC
+Migrasi pelanggan copper to fiber Kalbar,KALBAR,completed,medium,Batch migrasi 100 pelanggan dari copper ke fiber optic area Pontianak.,permintaan,Tim Migrasi
+Gangguan intermittent Palangkaraya,KALSELTENG,in_progress,high,Pelanggan area Palangkaraya Timur mengalami disconnect berkala setiap sore.,gangguan,Teknisi Tim C
+Request penambahan bandwidth sekolah,BALIKPAPAN,pending,medium,5 sekolah di Balikpapan request upgrade untuk program digitalisasi.,permintaan,AM Education
+Komplain tagihan tidak sesuai pemakaian,KALTIMTARA,pending,medium,Pelanggan merasa tagihan tidak sesuai dengan paket yang digunakan.,billing,CS Kaltimtara
+Pemasangan baru perumahan Kalbar,KALBAR,in_progress,low,Batch PSB 30 unit di perumahan baru area Pontianak Utara.,permintaan,Tim Instalasi Kalbar
+Gangguan total area Bontang,KALTIMTARA,completed,critical,Gangguan FO backbone Bontang sudah diperbaiki. Durasi downtime 4 jam.,gangguan,Tim Emergency Kaltimtara
