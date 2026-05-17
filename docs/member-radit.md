@@ -64,6 +64,47 @@ Sebagai **Lead QA & Docs**, tanggung jawab utama meliputi:
 - Membuat Pull Request pertama tim: `docs/modul9-git-workflow → main`
 - Melakukan proses code review dan squash merge
 
+### Modul 10 — CI Pipeline (Continuous Integration)
+- Menulis laporan testing `docs/test-report-modul10.md`
+- Mendokumentasikan 4-job CI pipeline: test-backend, test-frontend, build-docker, notify-failure
+- Membuat tabel hasil 11 backend tests (pytest) dan 16 frontend tests (Vitest)
+- Mendokumentasikan edge cases: login salah, akses unauthorized, endpoint 404
+- Menganalisis coverage backend (~85%) dan manfaat parallel jobs + caching
+
+### Modul 11 — CD Pipeline & Release
+- Menulis release notes Milestone 2 `docs/release-notes-m2.md`
+- Mendokumentasikan fitur baru v2.0.0: CI/CD pipeline, microservices, upload CSV
+- Dokumentasi production environment di server DeployCC
+- Membuat flowchart alur CI/CD dengan Mermaid (push → CI → merge → CD → server)
+- Mendokumentasikan deployment via systemctl dan Cloudflare Tunnel
+
+### Modul 12 — Microservices Decomposition
+- Menulis dokumentasi `docs/modul12-microservices.md`
+- Membuat diagram arsitektur microservices (Frontend → Gateway → Auth/Dashboard)
+- Mendokumentasikan full API contract: Auth Service (6 endpoints) + Dashboard (15 endpoints)
+- Dokumentasi Nginx Gateway routing dan rate limiting rules
+- Sequence diagram alur Login dan Create Revenue (inter-service communication)
+- Mendokumentasikan database-per-service pattern dan integer reference antar service
+
+### Modul 13 — Reliability Patterns
+- Menulis dokumentasi `docs/modul13-reliability.md`
+- Mendokumentasikan exponential backoff retry (3 attempts: 0.5s, 1s, 2s)
+- Membuat state machine diagram circuit breaker (CLOSED → OPEN → HALF_OPEN)
+- Dokumentasi graceful degradation saat Auth Service down
+- Menyusun test script untuk memverifikasi retry dan circuit breaker
+- Mendokumentasikan konfigurasi: threshold=3, cooldown=30s, timeout=5s
+
+### Modul 6 — Docker Arsitektur (Retroaktif)
+- Membuat `docs/docker-architecture.md` dengan diagram arsitektur 3-container
+- Dokumentasi port mapping, Docker network, dan volume configuration
+- Tabel environment variables per container
+- Penjelasan multi-stage build dan perbandingan ukuran image
+
+### Modul 7 — Demo Script (Retroaktif)
+- Membuat `docs/uts-demo-script.md` dengan 6-fase panduan demo
+- Script demo CRUD Revenue, data persistence, dan inter-container networking
+- Checklist demo UTS dan troubleshooting guide
+
 ---
 
 ## 🧪 Hasil Pengujian
@@ -76,18 +117,29 @@ Sebagai **Lead QA & Docs**, tanggung jawab utama meliputi:
 | Frontend Dashboard | ✅ | Data revenue tampil dengan benar |
 | Docker Build | ✅ | Image berhasil dibuild |
 | Docker Compose | ✅ | 3 service berjalan bersamaan |
-| GitHub Actions CI | ✅ | Pipeline lulus (centang hijau) |
+| GitHub Actions CI | ✅ | Pipeline lulus — 11 backend + 16 frontend tests |
 | Branch Protection | ✅ | Push langsung ke main ditolak |
 | Pull Request Flow | ✅ | PR dibuat, di-review, di-merge |
+| Auth Microservice | ✅ | POST /auth/register, /auth/login, GET /auth/verify |
+| Dashboard Microservice | ✅ | CRUD sales & inbox, summary, monthly |
+| API Gateway (Nginx) | ✅ | Routing dengan rate limiting |
+| Circuit Breaker | ✅ | CLOSED → OPEN (3 failures) → HALF_OPEN → CLOSED |
+| Retry Logic | ✅ | 3 attempts dengan exponential backoff berhasil |
+| Graceful Degradation | ✅ | Degraded mode aktif saat Auth Service down |
 
 ---
 
 ## 📅 Riwayat Aktivitas Mingguan
 
 | Minggu | Tanggal | Aktivitas |
-|--------|---------|-----------|
+|--------|---------|-----------| 
 | W1 (Modul 1) | Mar 2026 | Setup dokumentasi awal, validasi hello world endpoint |
 | W2 (Modul 2) | Mar 2026 | Dokumentasi REST API, testing CRUD via Swagger |
 | W3 (Modul 3-4) | Mar 2026 | Dokumentasi frontend dan auth, validasi integrasi |
 | W5 (Modul 5-7) | Apr 2026 | Dokumentasi Docker, setup CI pipeline, validasi compose |
 | W9 (Modul 9) | Mei 2026 | Dokumentasi Git Workflow, setup branch protection, buat PR |
+| W10 (Modul 10) | Mei 2026 | Laporan CI testing, dokumentasi pytest + Vitest, CI badge |
+| W11 (Modul 11) | Mei 2026 | Release notes Milestone 2, deployment docs DeployCC |
+| W12 (Modul 12) | Mei 2026 | Dokumentasi arsitektur microservices, API contract, sequence diagram |
+| W13 (Modul 13) | Mei 2026 | Dokumentasi circuit breaker dan retry reliability patterns |
+| W14 (Retroaktif) | Mei 2026 | Dokumentasi docker-architecture dan uts-demo-script |
