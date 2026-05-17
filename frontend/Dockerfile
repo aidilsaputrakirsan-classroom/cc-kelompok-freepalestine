@@ -1,18 +1,5 @@
-# ============================================================
-# Dashboard Telkom TREG 4 Kalimantan — Frontend Image
-# Multi-stage build (Modul 6 — Workshop 6.2)
-#
-# Stage 1: Build React app dengan Node + Vite
-# Stage 2: Serve file statis dengan Nginx
-#
-# Output akhir ~25 MB (vs ~1 GB kalau single-stage).
-# ============================================================
-
-
-# ------------------------------------------------------------
-# STAGE 1 — Builder
-# ------------------------------------------------------------
-# Vite 8 + @vitejs/plugin-react 6 membutuhkan Node ^20.19 atau >=22.12
+# Frontend Dashboard Telkom — Multi-stage build (Modul 6)
+# Stage 1: Build React app
 FROM node:20-alpine AS builder
 
 WORKDIR /app
@@ -27,13 +14,6 @@ RUN npm ci
 
 # Baru salin sisa source code (layer ini yang paling sering rebuild).
 COPY . .
-
-# VITE_API_URL harus di-inject saat build karena Vite mem-bundle
-# nilai env ke dalam JS statis. Default diarahkan ke service
-# "backend" agar cocok saat dijalankan via docker compose.
-ARG VITE_API_URL=http://localhost:8000
-ENV VITE_API_URL=$VITE_API_URL
-
 RUN npm run build
 
 
