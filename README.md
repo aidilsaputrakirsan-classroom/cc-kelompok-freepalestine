@@ -18,8 +18,8 @@ Dashboard monitoring revenue dan operasional Telkom Regional 4 Kalimantan, diban
 
 | Layer | Teknologi |
 |-------|-----------|
-| **Backend** | Python 3.12, FastAPI, SQLAlchemy, PostgreSQL |
-| **Frontend** | React 19, Vite, Recharts, Axios, Lucide React |
+| **Backend** | Python 3.11, FastAPI, SQLAlchemy, PostgreSQL |
+| **Frontend** | React 18, Vite, Recharts, Axios, Lucide React |
 | **Auth** | JWT (python-jose + bcrypt) |
 | **Gateway** | Nginx (reverse proxy + rate limiting) |
 | **Container** | Docker, Docker Compose |
@@ -103,10 +103,14 @@ npm run dev
 
 | Menu | Deskripsi | CRUD |
 |------|-----------|------|
-| 🔐 Login | JWT Auth + CAPTCHA + Loading Animation | - |
-| 🏠 Dashboard | KPI cards, Revenue trend, Bar chart, Donut chart | Read |
-| 📊 Revenue | Data penjualan per witel/channel/produk | ✅ Full CRUD |
-| 📬 Inbox | Tiket monitoring & Customer Care | ✅ Full CRUD |
+| 🔐 Login | JWT Auth + Session Timeout | - |
+| 🏠 Dashboard | KPI cards, Revenue trend, Witel Leaderboard summary | Read |
+| 📊 Revenue Analytics | Data penjualan per witel/channel/produk | ✅ Full CRUD |
+| 📬 Customer Care | Tiket monitoring & NPS | ✅ Full CRUD |
+| 🏆 Witel Leaderboard | Ranking performa Witel (score composite) | Read |
+| 📤 Upload Data Sources | Upload CSV/XLSX + toggle aktif/nonaktif | Create/Toggle |
+| 👤 User Management | Admin: CRUD users + role assignment | ✅ Admin Only |
+| 📝 Audit Log | Riwayat semua aktivitas user | Read (Admin) |
 
 ## 📁 Struktur Folder
 
