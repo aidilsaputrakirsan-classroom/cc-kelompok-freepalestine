@@ -8,19 +8,31 @@ and this project uses Conventional Commits.
 ## [Unreleased]
 
 ### Added
-- Add `.github/CODEOWNERS` for automatic reviewer assignment by area.
-- Add `.github/pull_request_template.md` to standardize PR quality checks.
-- Add `docs/git-workflow.md` as team guide for branching, commits, and review.
-- Add `docker-compose.prod.yml` as production compose override baseline.
-- Add `make lint`, `make test`, and `make pr-check` as PR readiness targets.
-- Add Modul 10 CI pipeline: lint (Ruff + ESLint), pytest, Vitest, Docker build, PR failure comment.
-- Add Modul 11 CD: DeployCC workflow (`.github/workflows/cd.yml`), health check, SSH scripts, `docs/deployment-guide.md`.
-- Add `backend/ruff.toml` and frontend Vitest test suite (6 tests).
+- Add Witel Performance model & `/upload/witel` endpoint for leaderboard data
+- Add `PATCH /datasources/{id}/toggle` for active/inactive datasource control
+- Add comprehensive database schema documentation (`docs/database-schema.md`)
+- Add complete API endpoints reference (`docs/api-endpoints.md`)
+- Add upload file format guide (`docs/upload-format-guide.md`)
+- Add frontend Dockerfile build-arg `VITE_API_URL` for deployment flexibility
+- Add comprehensive `.dockerignore` for frontend
 
 ### Changed
-- Extend `Makefile` help output with DevOps/CI targets.
-- Update README with Git workflow, CI badge, live demo (DeployCC), and CI/CD documentation.
-- Split CI (Modul 10) and CD DeployCC (Modul 11); remove Railway deploy from workflows.
+- Enable `Base.metadata.create_all` for auto-migration on startup
+- Leaderboard now reads from WitelPerformance table (upload-based data)
+- All sales/inbox queries now filter by active datasources only
+- Update `.env.example` with detailed comments and 3 connection modes
+- Update README with correct tech versions and complete feature list
+- Update PANDUAN-IRUD-RADIT with current project status
+
+### Removed
+- Remove `backend/drop_all.py` (deprecated utility)
+- Remove `backend/ruff.toml` (linting handled by CI)
+- Remove outdated Header.test.jsx and SearchBar.test.jsx
+- Remove AboutPage from navigation (simplify sidebar)
+
+### Fixed
+- Fix seed.py user password field (clean up corrupted data)
+- Strengthen test assertions for sales and inbox endpoints
 
 ## [v1.0.0] - 2026-04-01
 
