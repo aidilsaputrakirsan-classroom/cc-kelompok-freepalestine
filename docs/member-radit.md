@@ -1,145 +1,113 @@
-# 👤 Profil Anggota — Raditya Yudianto
+# Profil Kontribusi — Raditya Yudianto
 
-| Field | Detail |
-|-------|--------|
-| **Nama** | Raditya Yudianto |
-| **NIM** | 10231076 |
-| **Peran** | Lead QA & Docs |
-| **GitHub** | @Rhadide |
-| **Email** | raditya@student.itk.ac.id |
+**NIM:** 10231076  
+**Peran:** Lead QA & Documentation  
+**GitHub:** @Rhadide  
+**Branch:** `radit`, `radit-docs-modul14-15`
 
 ---
 
-## 🎯 Tanggung Jawab Utama
+## Kontribusi per Modul
 
-Sebagai **Lead QA & Docs**, tanggung jawab utama meliputi:
-- Menulis dan memelihara dokumentasi teknis setiap modul
-- Memastikan kualitas kode lewat pengujian manual dan review
-- Membuat dan memelihara file `README.md` dan panduan setup
-- Melakukan validasi integrasi antar komponen (Frontend ↔ Backend ↔ Database)
-- Memimpin proses review Pull Request anggota lain
-
----
-
-## 📋 Log Kontribusi per Modul
-
-### Modul 1 — Setup & Hello World
-- Menulis dokumentasi `modul1-setup-and-helloworld.md`
-- Validasi endpoint `/health` dan `/team` berjalan di server lokal
-- Update `README.md` dengan instruksi setup awal
-
-### Modul 2 — REST API & Database
-- Menulis dokumentasi `modul2-rest-api-database.md`
-- Validasi semua endpoint CRUD lewat Swagger UI (`/docs`)
-- Testing autentikasi JWT: register → login → akses endpoint protected
-
-### Modul 3 — Frontend React
-- Menulis dokumentasi `modul3-frontend-react.md`
-- Validasi tampilan dashboard di browser (login, navigasi, data)
-- Testing integrasi frontend dengan backend API
-
-### Modul 4 — Auth & CORS
-- Menulis dokumentasi `modul4-auth-cors.md`
-- Verifikasi konfigurasi CORS tidak memblokir request frontend
-- Testing alur login dan validasi JWT token
-
-### Modul 5 — Docker Container
-- Menulis dokumentasi `modul5-docker-container.md`
-- Validasi Docker build berhasil: `docker build -t freepalestine-backend .`
-- Testing container berjalan: `docker run -d -p 8080:8000 freepalestine-backend`
-
-### Modul 6 — Docker Compose (Multi-Container)
-- Menulis dokumentasi `modul6-docker-compose.md`
-- Validasi `docker compose up --build -d` menjalankan 3 service sekaligus
-- Testing healthcheck database sebelum backend startup
-
-### Modul 7 — Orkestrasi & CI Pipeline
-- Menulis dokumentasi `modul7-ci-cd-pipeline.md`
-- Setup GitHub Actions workflow (`.github/workflows/main.yml`)
-- Validasi pipeline berhasil berjalan (centang hijau di tab Actions)
-
-### Modul 9 — Git Workflow & Branching
-- Menulis dokumentasi `modul9-git-workflow.md`
-- Setup Branch Protection Rules di GitHub (Settings → Rules → Rulesets)
-- Membuat Pull Request pertama tim: `docs/modul9-git-workflow → main`
-- Melakukan proses code review dan squash merge
-
-### Modul 10 — CI Pipeline (Continuous Integration)
-- Menulis laporan testing `docs/test-report-modul10.md`
-- Mendokumentasikan 4-job CI pipeline: test-backend, test-frontend, build-docker, notify-failure
-- Membuat tabel hasil 11 backend tests (pytest) dan 16 frontend tests (Vitest)
-- Mendokumentasikan edge cases: login salah, akses unauthorized, endpoint 404
-- Menganalisis coverage backend (~85%) dan manfaat parallel jobs + caching
-
-### Modul 11 — CD Pipeline & Release
-- Menulis release notes Milestone 2 `docs/release-notes-m2.md`
-- Mendokumentasikan fitur baru v2.0.0: CI/CD pipeline, microservices, upload CSV
-- Dokumentasi production environment di server DeployCC
-- Membuat flowchart alur CI/CD dengan Mermaid (push → CI → merge → CD → server)
-- Mendokumentasikan deployment via systemctl dan Cloudflare Tunnel
-
-### Modul 12 — Microservices Decomposition
-- Menulis dokumentasi `docs/modul12-microservices.md`
-- Membuat diagram arsitektur microservices (Frontend → Gateway → Auth/Dashboard)
-- Mendokumentasikan full API contract: Auth Service (6 endpoints) + Dashboard (15 endpoints)
-- Dokumentasi Nginx Gateway routing dan rate limiting rules
-- Sequence diagram alur Login dan Create Revenue (inter-service communication)
-- Mendokumentasikan database-per-service pattern dan integer reference antar service
-
-### Modul 13 — Reliability Patterns
-- Menulis dokumentasi `docs/modul13-reliability.md`
-- Mendokumentasikan exponential backoff retry (3 attempts: 0.5s, 1s, 2s)
-- Membuat state machine diagram circuit breaker (CLOSED → OPEN → HALF_OPEN)
-- Dokumentasi graceful degradation saat Auth Service down
-- Menyusun test script untuk memverifikasi retry dan circuit breaker
-- Mendokumentasikan konfigurasi: threshold=3, cooldown=30s, timeout=5s
-
-### Modul 6 — Docker Arsitektur (Retroaktif)
-- Membuat `docs/docker-architecture.md` dengan diagram arsitektur 3-container
-- Dokumentasi port mapping, Docker network, dan volume configuration
-- Tabel environment variables per container
-- Penjelasan multi-stage build dan perbandingan ukuran image
-
-### Modul 7 — Demo Script (Retroaktif)
-- Membuat `docs/uts-demo-script.md` dengan 6-fase panduan demo
-- Script demo CRUD Revenue, data persistence, dan inter-container networking
-- Checklist demo UTS dan troubleshooting guide
+| Modul | Judul | Kontribusi | Status |
+|-------|-------|-----------|--------|
+| 1 | Setup & Hello World | Dokumentasi setup environment, member profile | ✅ |
+| 2 | REST API & Database | Dokumentasi endpoint API, schema database | ✅ |
+| 3 | Frontend React | Dokumentasi komponen UI, screenshot dashboard | ✅ |
+| 4 | Auth & CORS | Dokumentasi alur autentikasi, test login | ✅ |
+| 5 | Docker | Dokumentasi Dockerfile, test container | ✅ |
+| 6 | Docker Compose | Dokumentasi multi-service setup | ✅ |
+| 7 | CI Pipeline | Konfigurasi workflow awal, fix pipeline | ✅ |
+| 8 | UTS Demo | Test end-to-end, dokumentasi presentasi | ✅ |
+| 9 | Git Workflow | Dokumentasi branching strategy, PR workflow | ✅ |
+| 10 | CI/CD Pipeline | **Fix CI pipeline** (tambah PostgreSQL service), dokumentasi CI | ✅ |
+| 11 | CD Deployment | Dokumentasi deployment, screenshot bukti | ✅ |
+| 12 | Microservices | Dokumentasi arsitektur microservices, flowchart | ✅ |
+| 13 | Reliability | Dokumentasi circuit breaker, retry pattern | ✅ |
+| 14 | Monitoring | Dokumentasi observability, StatusPage, Correlation ID | ✅ |
+| 15 | Security & Final | Security audit report, OWASP checklist, release notes | ✅ |
 
 ---
 
-## 🧪 Hasil Pengujian
+## Commit History (Branch radit & main)
 
-| Komponen | Status | Keterangan |
-|----------|:------:|------------|
-| Backend API (`/health`) | ✅ | Returning status healthy |
-| Auth Login | ✅ | JWT token berhasil digenerate |
-| Auth Register | ✅ | User berhasil tersimpan di DB |
-| Frontend Dashboard | ✅ | Data revenue tampil dengan benar |
-| Docker Build | ✅ | Image berhasil dibuild |
-| Docker Compose | ✅ | 3 service berjalan bersamaan |
-| GitHub Actions CI | ✅ | Pipeline lulus — 11 backend + 16 frontend tests |
-| Branch Protection | ✅ | Push langsung ke main ditolak |
-| Pull Request Flow | ✅ | PR dibuat, di-review, di-merge |
-| Auth Microservice | ✅ | POST /auth/register, /auth/login, GET /auth/verify |
-| Dashboard Microservice | ✅ | CRUD sales & inbox, summary, monthly |
-| API Gateway (Nginx) | ✅ | Routing dengan rate limiting |
-| Circuit Breaker | ✅ | CLOSED → OPEN (3 failures) → HALF_OPEN → CLOSED |
-| Retry Logic | ✅ | 3 attempts dengan exponential backoff berhasil |
-| Graceful Degradation | ✅ | Degraded mode aktif saat Auth Service down |
+### Minggu Ini (24 Mei 2026)
+- `docs(radit): add Modul 14, 15 docs + release notes M3 + operations guide`
+- `docs(radit): add CI fix guide for Isbat/Ariel`
+- `docs(radit): add modul11-service-status.png`
+- `docs(radit): add CI/CD pipeline screenshots for Modul 10 and 11`
+- `fix(test): make list_sales and list_inbox assertions more robust`
+
+### Sebelumnya (17 Mei 2026)
+- `fix(backend): sync models.py, crud.py, schemas.py with main branch`
+- `fix(ci): add PostgreSQL service to test-backend job`
+- `docs(radit): dokumentasi lengkap Modul 6-13 + reliability patterns`
 
 ---
 
-## 📅 Riwayat Aktivitas Mingguan
+## Deliverable Dokumentasi
 
-| Minggu | Tanggal | Aktivitas |
-|--------|---------|-----------| 
-| W1 (Modul 1) | Mar 2026 | Setup dokumentasi awal, validasi hello world endpoint |
-| W2 (Modul 2) | Mar 2026 | Dokumentasi REST API, testing CRUD via Swagger |
-| W3 (Modul 3-4) | Mar 2026 | Dokumentasi frontend dan auth, validasi integrasi |
-| W5 (Modul 5-7) | Apr 2026 | Dokumentasi Docker, setup CI pipeline, validasi compose |
-| W9 (Modul 9) | Mei 2026 | Dokumentasi Git Workflow, setup branch protection, buat PR |
-| W10 (Modul 10) | Mei 2026 | Laporan CI testing, dokumentasi pytest + Vitest, CI badge |
-| W11 (Modul 11) | Mei 2026 | Release notes Milestone 2, deployment docs DeployCC |
-| W12 (Modul 12) | Mei 2026 | Dokumentasi arsitektur microservices, API contract, sequence diagram |
-| W13 (Modul 13) | Mei 2026 | Dokumentasi circuit breaker dan retry reliability patterns |
-| W14 (Retroaktif) | Mei 2026 | Dokumentasi docker-architecture dan uts-demo-script |
+### File Docs yang Dibuat
+
+| File | Isi |
+|------|-----|
+| `docs/member-radit.md` | Profil dan kontribusi (ini) |
+| `docs/modul1-setup-and-helloworld.md` | Setup environment |
+| `docs/modul2-rest-api-database.md` | REST API & database |
+| `docs/modul3-frontend-react.md` | Frontend React |
+| `docs/modul4-auth-cors.md` | Auth & CORS |
+| `docs/modul5-docker-container.md` | Docker |
+| `docs/modul6-docker-compose.md` | Docker Compose |
+| `docs/modul7-ci-cd-pipeline.md` | CI/CD Pipeline pertama |
+| `docs/modul9-git-workflow.md` | Git workflow |
+| `docs/modul10-11-cicd-report.md` | Laporan CI/CD Pipeline |
+| `docs/modul12-microservices.md` | Dokumentasi Microservices |
+| `docs/modul13-reliability.md` | Circuit Breaker & Retry |
+| `docs/modul14-monitoring-observability.md` | Monitoring & Observability |
+| `docs/modul15-security-final.md` | Security & Final Polish |
+| `docs/release-notes-m1.md` | Release notes Milestone 1 (UTS) |
+| `docs/release-notes-m2.md` | Release notes Milestone 2 |
+| `docs/release-notes-m3.md` | Release notes Milestone 3 (UAS) |
+| `docs/operations-guide.md` | Panduan operasional |
+| `docs/panduan-fix-ci-untuk-isbat.md` | Panduan fix CI untuk anggota tim |
+
+### Screenshots yang Dikumpulkan
+
+| File | Isi |
+|------|-----|
+| `screenshots/modul10-ci-passing.png` | CI Pipeline semua job hijau |
+| `screenshots/modul10-backend-test-detail.png` | pytest 19/19 passed |
+| `screenshots/modul10-frontend-test-detail.png` | Vitest passed |
+| `screenshots/modul11-cd-success.png` | CD Deploy success |
+| `screenshots/modul11-deploy-summary.png` | Deployment summary |
+| `screenshots/modul11-health-check.png` | /health endpoint healthy |
+| `screenshots/modul11-frontend-live.png` | Frontend live di production |
+| `screenshots/modul11-service-status.png` | Deploy to DeployCC log |
+| `screenshots/modul14-status-page.png` | System Status Page *(perlu SS)* |
+| `screenshots/modul15-security-headers.png` | Security headers aktif *(perlu SS)* |
+
+---
+
+## Fix CI Pipeline (Kontribusi Teknis)
+
+Selain dokumentasi, berkontribusi dalam memperbaiki CI pipeline yang gagal:
+
+### Masalah yang Ditemukan
+1. `main.yml` duplikat dengan `ci.yml` → konflik pipeline
+2. `ci.yml` tidak punya PostgreSQL service → test backend gagal connect DB
+3. `models.py` versi lama tidak punya `AuditLog` class → `ImportError`
+4. Test assertion `total >= 1` terlalu ketat → fail karena DB kosong di CI
+
+### Fix yang Dilakukan
+1. Hapus `main.yml` (workflow lama)
+2. Tambah PostgreSQL service ke `ci.yml`
+3. Sync `models.py`, `crud.py`, `schemas.py` dari `origin/main`
+4. Fix test assertion di `test_main.py` → validasi struktur, bukan count
+
+### Hasil
+- **Sebelum:** 0/19 test passed (ImportError)
+- **Sesudah:** 19/19 test passed ✅
+
+---
+
+*Profil diperbarui: 24 Mei 2026*
