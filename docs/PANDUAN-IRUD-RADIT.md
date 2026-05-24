@@ -5,11 +5,13 @@
 
 ---
 
-## Status Terkini (Per 14 Mei 2026)
+## Status Terkini (Per 23 Mei 2026)
 
-- Branch `ariel` sudah di-push ke GitHub dengan semua pekerjaan Modul 1-15
-- Branch `main` di GitHub masih di commit Modul 9 (terakhir push Irud)
-- Branch `radit` di GitHub berisi dokumentasi Modul 1-9 (screenshot + laporan)
+- ✅ Branch `main` sudah berisi semua pekerjaan Ariel (backend, frontend, upload, witel)
+- ✅ PR #7 (ariel-to-main) dan PR #8 (radit docs) sudah merged
+- ✅ PR #9 (final improvements) sudah merged
+- Branch `radit` berisi dokumentasi Modul 1-13 (screenshot + laporan)
+- Deployment menggunakan Cloudflare Tunnel/VPS (bukan Railway)
 
 ---
 
