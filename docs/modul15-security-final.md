@@ -170,13 +170,46 @@ add_header Content-Security-Policy "default-src 'self'..." always;
 
 ---
 
-## 7. Kontribusi Lead QA & Docs — Modul 15
+## 7. Security Hardening & Polish (Modul 15 Updates)
+
+Berdasarkan audit keamanan lanjutan dan polish sistem, kami menerapkan pembatasan input yang lebih ketat serta proteksi kebocoran informasi pada client-side:
+
+### 7.1 Pengetatan Validasi Input Pydantic (Backend)
+Untuk mencegah eksploitasi Resource Exhaustion (DoS) dan SQL Injection, kami mendefinisikan panjang maksimum (`max_length`) untuk field-field string yang rentan pada service backend:
+
+*   **Auth Service (`UserCreate`):**
+    *   `password`: Memiliki constraint panjang `min_length=8` dan baru ditambahkan limit `max_length=128`.
+*   **Dashboard Service (`SalesCreate`):**
+    *   `witel`: Diberikan limit `max_length=50`
+    *   `channel`: Diberikan limit `max_length=50`
+    *   `product`: Default `"HSI"`, diberikan limit `max_length=50`
+*   **Dashboard Service (`InboxCreate`):**
+    *   `title`: Tetap `min_length=1`, `max_length=200`
+    *   `description`: Diberikan limit `max_length=2000`
+    *   `witel`: Diberikan limit `max_length=50`
+    *   `category`: Diberikan limit `max_length=50`
+    *   `assigned_to`: Diberikan limit `max_length=100`
+
+### 7.2 Proteksi Kebocoran Informasi (Frontend Client-Side)
+Di lingkungan production, log konsol yang terlalu detail dapat membocorkan struktur data internal, URL endpoint API, atau error stack trace yang dapat dimanfaatkan oleh penyerang (Fingerprinting).
+
+*   Kami membungkus seluruh `console.error` dan `console.log` di dalam file frontend inti dengan pengecekan lingkungan pengembangan (`import.meta.env.DEV`). Log hanya akan muncul jika aplikasi dijalankan di mode local development.
+*   File yang dimodifikasi meliputi:
+    *   `frontend/src/components/ErrorBoundary.jsx`
+    *   `frontend/src/pages/Dashboard/HomeDashboard.jsx`
+    *   `frontend/src/pages/Leaderboard/LeaderboardPage.jsx`
+    *   `frontend/src/pages/Users/UsersPage.jsx`
+    *   `frontend/src/utils/uploadEvents.js`
+
+---
+
+## 8. Kontribusi Lead QA & Docs — Modul 15
 
 | Tugas | Status | Deliverable |
 |-------|--------|-------------|
 | Security audit (OWASP checklist) | ✅ Selesai | Dokumen ini |
-| Dokumentasi rate limiting | ✅ Selesai | Section 3 & 4 |
-| Verifikasi security headers | ✅ Selesai | Section 4 |
+| Dokumentasi rate limiting & security headers | ✅ Selesai | Section 3, 4 & 5 |
+| Verifikasi hardening input backend & frontend | ✅ Selesai | Section 7 (Analisis Pydantic & Console Logger) |
 | README final update | ✅ Selesai | `README.md` |
 | Release notes M3 | ✅ Selesai | `docs/release-notes-m3.md` |
 | Operations guide | ✅ Selesai | `docs/operations-guide.md` |
