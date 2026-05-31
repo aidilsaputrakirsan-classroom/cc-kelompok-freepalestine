@@ -57,6 +57,8 @@ flowchart LR
 - **Security Headers** — X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, CSP
 - **Body Size Limit** — max 10MB per request
 - **Brute Force Protection** — rate limit ketat di `/auth/login`
+- **Input Size Restrictions (FastAPI)** — added strict length checks (`max_length` up to 50/100/2000 chars) for Pydantic input schemas (witel, channel, product, and descriptions) to block oversized payloads.
+- **Production Log Silencing (Frontend)** — restricted browser console logging (errors and info) using environment-based gates (`import.meta.env.DEV`) to prevent fingerprinting and sensitive API endpoint disclosure in production.
 
 ---
 
