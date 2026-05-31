@@ -26,7 +26,8 @@ Dashboard monitoring revenue dan operasional Telkom Regional 4 Kalimantan, diban
 | **CI/CD** | GitHub Actions → DeployCC |
 | **Reliability** | Circuit Breaker, Retry with Exponential Backoff |
 | **Observability** | Structured JSON Logging, Correlation IDs, Metrics |
-| **Security** | Rate Limiting, Security Headers, Input Validation |
+| **Security** | Rate Limiting, Security Headers, Input Constraints, Production Log Hardening |
+
 
 ## 🏗️ Arsitektur
 
