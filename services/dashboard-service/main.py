@@ -167,7 +167,7 @@ def get_db():
 
 # ==================== SCHEMAS ====================
 class SalesCreate(BaseModel):
-    witel: str; channel: str; product: str = "HSI"
+    witel: str = Field(..., max_length=50); channel: str = Field(..., max_length=50); product: str = Field(default="HSI", max_length=50)
     revenue_target: float = Field(ge=0); revenue_actual: float = Field(ge=0)
     sales_target: int = Field(ge=0); sales_actual: int = Field(ge=0)
     period_month: int = Field(ge=1, le=12); period_year: int = Field(ge=2020, le=2030)
@@ -179,9 +179,9 @@ class SalesUpdate(BaseModel):
     period_month: Optional[int] = None; period_year: Optional[int] = None
 
 class InboxCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=200); description: Optional[str] = None
+    title: str = Field(min_length=1, max_length=200); description: Optional[str] = Field(default=None, max_length=2000)
     status: str = "pending"; priority: str = "medium"
-    witel: str; category: Optional[str] = None; assigned_to: Optional[str] = None
+    witel: str = Field(..., max_length=50); category: Optional[str] = Field(default=None, max_length=50); assigned_to: Optional[str] = Field(default=None, max_length=100)
 
 class InboxUpdate(BaseModel):
     title: Optional[str] = None; description: Optional[str] = None

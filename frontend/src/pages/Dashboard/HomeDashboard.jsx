@@ -86,7 +86,7 @@ export default function HomeDashboard() {
             });
             setMonthlyData(Object.values(monthMap).sort((a, b) => MONTHS.indexOf(a.name) - MONTHS.indexOf(b.name)));
         } catch (err) {
-            console.error('Failed to load dashboard data:', err);
+            if (import.meta.env.DEV) console.error('Failed to load dashboard data:', err);
         } finally {
             setLoading(false);
         }
