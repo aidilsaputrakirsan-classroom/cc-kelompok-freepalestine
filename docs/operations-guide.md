@@ -177,6 +177,17 @@ curl http://localhost:8080/health/dashboard
 # Kurangi frekuensi request (limit = 30r/detik)
 ```
 
+### Error 422 (Unprocessable Entity) - Validasi Input Gagal
+Backend menerapkan pembatasan string input (`max_length`) untuk mencegah serangan Denial of Service (DoS):
+- **Auth (Register/Login):** Password harus berkisar antara 8 hingga 128 karakter.
+- **Revenue/Sales:** Nama `witel`, `channel`, dan `product` dibatasi maksimal 50 karakter.
+- **Customer Care (Inbox/Ticket):** Judul tiket (`title`) maksimal 200 karakter, dan deskripsi (`description`) maksimal 2000 karakter.
+- **Solusi:** Jika mendapati error 422, pastikan payload JSON yang dikirimkan oleh browser/client memenuhi batas panjang karakter di atas.
+
+### Console Logs Kosong di Production
+Seluruh log konsol frontend (`console.log` / `console.error`) dibatasi hanya aktif di lingkungan lokal development (`import.meta.env.DEV`) untuk mencegah fingerprinting API endpoint dan data leaks.
+- **Untuk Keperluan Debugging:** Jalankan frontend secara lokal (`npm run dev`) agar log konsol dan stack trace internal kembali muncul di Developer Tools.
+
 ---
 
 ## 6. Cara Login & Penggunaan
