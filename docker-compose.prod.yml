@@ -1,6 +1,8 @@
-# Production override for docker compose.
+# Production override — Monolith stack only.
 # Usage:
-# docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Microservices production: gunakan docker-compose.microservices.prod.yml
 
 services:
   db:
