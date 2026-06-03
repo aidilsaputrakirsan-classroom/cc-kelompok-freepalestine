@@ -243,7 +243,7 @@ function AuditTab() {
             const res = await auditApi.list(params);
             setData(res);
         } catch (err) {
-            console.error(err);
+            if (import.meta.env.DEV) console.error(err);
         } finally {
             setLoading(false);
         }

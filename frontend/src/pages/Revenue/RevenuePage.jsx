@@ -22,6 +22,7 @@ export default function RevenuePage() {
     const [showModal, setShowModal] = useState(false);
     const [saving, setSaving] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const [highlightedId, setHighlightedId] = useState(null);
     const limit = 15;
 
     const [form, setForm] = useState({
@@ -122,14 +123,22 @@ export default function RevenuePage() {
                 period_year: Number(form.period_year),
             };
             if (editItem) {
-                await salesApi.update(editItem.id, payload);
+                const updated = await salesApi.update(editItem.id, payload);
+                // Update in-place tanpa mengubah urutan
+                setData((prev) => ({
+                    ...prev,
+                    items: prev.items.map((item) => item.id === editItem.id ? { ...item, ...updated } : item),
+                }));
+                // Highlight baris yang baru diedit selama 3 detik
+                setHighlightedId(editItem.id);
+                setTimeout(() => setHighlightedId(null), 3000);
                 toast.success('Data revenue diperbarui', `${payload.witel} · ${payload.product} · bulan ${payload.period_month}/${payload.period_year}`);
             } else {
                 await salesApi.create(payload);
                 toast.success('Data revenue ditambahkan', `${payload.witel} · ${payload.product} · bulan ${payload.period_month}/${payload.period_year}`);
+                loadData();
             }
             setShowModal(false);
-            loadData();
         } catch (err) {
             toast.error('Gagal menyimpan data', extractErrorMessage(err));
         } finally {
@@ -260,8 +269,9 @@ export default function RevenuePage() {
                                 <tr><td colSpan="11" className="table-empty">Tidak ada data untuk filter ini.</td></tr>
                             ) : data.items.map((item) => {
                                 const ach = item.revenue_target > 0 ? ((item.revenue_actual / item.revenue_target) * 100).toFixed(1) : '0.0';
+                                const isHighlighted = highlightedId === item.id;
                                 return (
-                                    <tr key={item.id}>
+                                    <tr key={item.id} className={isHighlighted ? 'row-highlight' : ''}>
                                         <td><span className="witel-badge">{item.witel}</span></td>
                                         <td>{item.channel}</td>
                                         <td><span className="product-badge">{item.product}</span></td>

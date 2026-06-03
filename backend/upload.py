@@ -354,3 +354,93 @@ def map_inbox_rows(rows: List[dict]) -> Tuple[List[dict], List[str]]:
             errors.append(f"Baris {line}: {e}")
 
     return mapped, errors
+
+
+# ============================================================
+# MAPPER — WITEL PERFORMANCE / LEADERBOARD
+# ============================================================
+
+WITEL_COLUMNS = {
+    "witel":            ["witel", "witel_billing"],
+    "total_pelanggan":  ["total_pelanggan", "pelanggan_total", "total_customer"],
+    "pelanggan_baru":   ["pelanggan_baru", "new_customer", "customer_baru"],
+    "churn":            ["churn", "churn_count"],
+    "revenue_total":    ["revenue_total", "total_revenue", "revenue"],
+    "nps_score":        ["nps_score", "nps", "net_promoter_score"],
+    "gangguan_total":   ["gangguan_total", "total_gangguan", "total_ticket"],
+    "gangguan_selesai": ["gangguan_selesai", "resolved", "ticket_resolved"],
+    "period_month":     ["period_month", "bulan"],
+    "period_year":      ["period_year", "tahun"],
+}
+WITEL_REQUIRED = list(WITEL_COLUMNS.keys())
+
+
+def map_witel_rows(rows: List[dict]) -> Tuple[List[dict], List[str]]:
+    """
+    Map rows menjadi format WitelPerformance. Validasi ketat:
+    - Semua kolom di WITEL_REQUIRED harus hadir di header.
+    - witel harus ∈ ALLOWED_WITELS.
+    - period_month 1-12, period_year 2020-2030.
+    - Semua angka harus >= 0.
+    """
+    if not rows:
+        raise ValueError("File kosong: tidak ada baris data yang bisa diproses.")
+
+    header_keys = list(rows[0].keys())
+    col_map = _build_col_map(header_keys, WITEL_COLUMNS)
+
+    missing = [logical for logical in WITEL_REQUIRED if col_map[logical] is None]
+    if missing:
+        raise ValueError(
+            "File ditolak: format tidak sesuai skema Witel Leaderboard. "
+            f"Kolom wajib yang hilang: {', '.join(missing)}."
+        )
+
+    mapped: List[dict] = []
+    errors: List[str] = []
+
+    for i, row in enumerate(rows):
+        line = i + 2
+        try:
+            witel = _normalize_witel(row.get(col_map["witel"]))
+            if witel not in ALLOWED_WITELS:
+                raise ValueError(
+                    f"witel '{row.get(col_map['witel'])}' tidak dikenal. "
+                    f"Gunakan salah satu: {', '.join(sorted(ALLOWED_WITELS))}."
+                )
+
+            total_pelanggan = _safe_int(row.get(col_map["total_pelanggan"]))
+            pelanggan_baru = _safe_int(row.get(col_map["pelanggan_baru"]))
+            churn = _safe_int(row.get(col_map["churn"]))
+            revenue_total = _safe_float(row.get(col_map["revenue_total"]))
+            nps_score = _safe_int(row.get(col_map["nps_score"]))
+            gangguan_total = _safe_int(row.get(col_map["gangguan_total"]))
+            gangguan_selesai = _safe_int(row.get(col_map["gangguan_selesai"]))
+            period_month = _safe_int(row.get(col_map["period_month"]))
+            period_year = _safe_int(row.get(col_map["period_year"]))
+
+            if not (1 <= period_month <= 12):
+                raise ValueError(f"period_month '{period_month}' harus 1-12.")
+            if not (2020 <= period_year <= 2030):
+                raise ValueError(f"period_year '{period_year}' harus 2020-2030.")
+            if any(v < 0 for v in (total_pelanggan, pelanggan_baru, churn, revenue_total, gangguan_total, gangguan_selesai)):
+                raise ValueError("Semua nilai angka tidak boleh negatif.")
+            if not (0 <= nps_score <= 100):
+                raise ValueError(f"nps_score '{nps_score}' harus 0-100.")
+
+            mapped.append({
+                "witel": witel,
+                "total_pelanggan": total_pelanggan,
+                "pelanggan_baru": pelanggan_baru,
+                "churn": churn,
+                "revenue_total": revenue_total,
+                "nps_score": nps_score,
+                "gangguan_total": gangguan_total,
+                "gangguan_selesai": gangguan_selesai,
+                "period_month": period_month,
+                "period_year": period_year,
+            })
+        except Exception as e:
+            errors.append(f"Baris {line}: {e}")
+
+    return mapped, errors

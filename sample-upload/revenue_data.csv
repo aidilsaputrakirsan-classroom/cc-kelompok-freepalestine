@@ -1,0 +1,47 @@
+witel,telda,channel,product,revenue_target,revenue_actual,sales_target,sales_actual,period_month,period_year
+BALIKPAPAN,Inner Witel Balikpapan,Direct,HSI,4.5,4.72,225,237,1,2025
+BALIKPAPAN,Inner Witel Balikpapan,Mitra,HSI,2.7,2.83,135,142,1,2025
+BALIKPAPAN,Paser,Online,HSI,1.8,1.69,90,84,1,2025
+BALIKPAPAN,Inner Witel Balikpapan,Direct,B2B,2.7,2.92,135,146,1,2025
+BALIKPAPAN,Penajam,Mitra,B2B,1.62,1.55,81,77,1,2025
+KALBAR,Pontianak,Direct,HSI,6.5,6.31,350,340,1,2025
+KALBAR,Pontianak,Mitra,HSI,3.9,3.78,210,204,1,2025
+KALBAR,Singkawang,Online,HSI,2.6,2.52,140,136,1,2025
+KALBAR,Ketapang,Direct,B2B,3.9,3.79,210,204,1,2025
+KALBAR,Sanggau,Mitra,WMS,1.95,1.89,105,101,1,2025
+KALSELTENG,Inner Witel Kalsel,Direct,HSI,8.0,8.24,430,443,1,2025
+KALSELTENG,Palangkaraya,Mitra,HSI,4.8,4.94,258,266,1,2025
+KALSELTENG,Sampit,Online,HSI,3.2,3.3,172,177,1,2025
+KALSELTENG,Banjarbaru,Direct,B2B,4.8,4.94,258,266,1,2025
+KALSELTENG,Pangkalan Bun,Mitra,WMS,2.4,2.47,129,133,1,2025
+KALTIMTARA,Inner Witel Samarinda,Direct,HSI,8.3,9.21,475,527,1,2025
+KALTIMTARA,Bontang,Mitra,HSI,4.98,5.53,285,316,1,2025
+KALTIMTARA,Tarakan,Online,HSI,3.32,3.69,190,211,1,2025
+KALTIMTARA,Tanjung Redeb,Direct,B2B,4.98,5.53,285,316,1,2025
+KALTIMTARA,Nunukan,Mitra,WMS,2.49,2.76,142,158,1,2025
+BALIKPAPAN,Inner Witel Balikpapan,Direct,HSI,4.6,4.85,230,242,2,2025
+BALIKPAPAN,Paser,Mitra,HSI,2.76,2.91,138,145,2,2025
+BALIKPAPAN,Penajam,Online,B2B,1.84,1.94,92,97,2,2025
+KALBAR,Pontianak,Direct,HSI,6.63,6.43,357,347,2,2025
+KALBAR,Mempawah,Mitra,B2B,3.98,3.86,214,207,2,2025
+KALBAR,Sintang,Online,WMS,2.65,2.57,143,139,2,2025
+KALSELTENG,Inner Witel Kalsel,Direct,HSI,8.16,8.4,439,452,2,2025
+KALSELTENG,Buntok,Mitra,HSI,4.9,5.04,263,271,2,2025
+KALTIMTARA,Inner Witel Samarinda,Direct,HSI,8.47,9.4,485,538,2,2025
+KALTIMTARA,Tenggarong,Mitra,B2B,5.08,5.64,291,323,2,2025
+BALIKPAPAN,Inner Witel Balikpapan,Direct,HSI,4.7,4.98,235,249,3,2025
+KALBAR,Pontianak,Direct,HSI,6.76,6.56,365,354,3,2025
+KALSELTENG,Inner Witel Kalsel,Direct,HSI,8.32,8.57,448,462,3,2025
+KALTIMTARA,Inner Witel Samarinda,Direct,HSI,8.63,9.58,494,549,3,2025
+BALIKPAPAN,Inner Witel Balikpapan,Direct,HSI,4.8,5.11,240,256,4,2025
+KALBAR,Pontianak,Direct,HSI,6.89,6.68,372,361,4,2025
+KALSELTENG,Inner Witel Kalsel,Direct,HSI,8.48,8.73,457,471,4,2025
+KALTIMTARA,Inner Witel Samarinda,Direct,HSI,8.8,9.77,503,559,4,2025
+BALIKPAPAN,Inner Witel Balikpapan,Direct,HSI,4.9,5.24,245,262,5,2025
+KALBAR,Pontianak,Direct,HSI,7.02,6.81,379,368,5,2025
+KALSELTENG,Inner Witel Kalsel,Direct,HSI,8.64,8.9,466,480,5,2025
+KALTIMTARA,Inner Witel Samarinda,Direct,HSI,8.96,9.95,513,569,5,2025
+BALIKPAPAN,Inner Witel Balikpapan,Direct,HSI,5.0,5.37,250,269,6,2025
+KALBAR,Pontianak,Direct,HSI,7.15,6.93,386,375,6,2025
+KALSELTENG,Inner Witel Kalsel,Direct,HSI,8.8,9.06,475,489,6,2025
+KALTIMTARA,Inner Witel Samarinda,Direct,HSI,9.13,10.13,522,580,6,2025

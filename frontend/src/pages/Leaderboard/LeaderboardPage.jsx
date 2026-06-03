@@ -50,7 +50,7 @@ export default function LeaderboardPage() {
             const data = await leaderboardApi.get({ year });
             setRows(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error(err);
+            if (import.meta.env.DEV) console.error(err);
         } finally {
             setLoading(false);
         }

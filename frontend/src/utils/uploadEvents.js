@@ -64,11 +64,11 @@ export function useDataUploadEvent(handler) {
 
     useEffect(() => {
         const onUpload = (e) => {
-            try { ref.current?.(e.detail || {}); } catch (err) { console.error(err); }
+            try { ref.current?.(e.detail || {}); } catch (err) { if (import.meta.env.DEV) console.error(err); }
         };
         const onStorage = (e) => {
             if (e.key !== STORAGE_KEY || !e.newValue) return;
-            try { ref.current?.(JSON.parse(e.newValue)); } catch (err) { console.error(err); }
+            try { ref.current?.(JSON.parse(e.newValue)); } catch (err) { if (import.meta.env.DEV) console.error(err); }
         };
         window.addEventListener(UPLOAD_EVENT, onUpload);
         window.addEventListener('storage', onStorage);
