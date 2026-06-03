@@ -1,6 +1,6 @@
 .PHONY: help up down build logs ps clean restart logs-backend shell-backend shell-db \
         compose-config images-build images-tag images-push release-images show-image-sizes \
-        lint test pr-check
+        lint test pr-check ms-up ms-down ms-dev integration-test migrate-data
 
 # Gunakan .env.docker jika ada, fallback ke template agar command tetap bisa dijalankan.
 ENV_FILE ?= $(if $(wildcard .env.docker),.env.docker,.env.docker.example)
@@ -43,6 +43,13 @@ help:
 	@echo "  make lint           # Lint frontend + cek sintaks backend"
 	@echo "  make test           # Jalankan backend test suite (pytest)"
 	@echo "  make pr-check       # Compose config + build image + lint + test"
+	@echo ""
+	@echo "Microservices (Modul 12-13):"
+	@echo "  make ms-up            # docker compose microservices up -d --build"
+	@echo "  make ms-down          # Stop microservices stack"
+	@echo "  make ms-dev           # Microservices + dev hot-reload override"
+	@echo "  make integration-test # pytest tests/integration (gateway harus jalan)"
+	@echo "  make migrate-data     # scripts/migrate_data.py monolith -> MS DBs"
 	@echo ""
 	@echo "Debug targets:"
 	@echo "  make shell-backend  # Masuk shell backend"
@@ -138,3 +145,21 @@ ci-local-docker:
 ci-local: ci-local-backend ci-local-frontend ci-local-docker
 
 pr-check: compose-config build lint test
+
+# --- Microservices (Modul 12-13) ---
+MS_COMPOSE := docker compose -f docker-compose.microservices.yml
+
+ms-up:
+	$(MS_COMPOSE) up -d --build
+
+ms-down:
+	$(MS_COMPOSE) down -v
+
+ms-dev:
+	docker compose -f docker-compose.microservices.yml -f docker-compose.dev.yml up --build
+
+integration-test:
+	GATEWAY_URL=http://localhost:8080 pytest tests/integration/ -v
+
+migrate-data:
+	python scripts/migrate_data.py

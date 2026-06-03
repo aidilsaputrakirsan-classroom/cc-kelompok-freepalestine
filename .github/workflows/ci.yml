@@ -1,6 +1,6 @@
 # CI Pipeline — Free Palestine (Modul 10)
 # Trigger: push/PR ke main
-# Jobs: test-backend + test-frontend (parallel) → build-docker → notify on failure
+# Jobs: test-backend + test-frontend → build-docker + integration-test → notify on failure
 # CD: .github/workflows/cd.yml (DeployCC) — jalan setelah CI sukses di main
 
 name: CI Pipeline
@@ -136,14 +136,67 @@ jobs:
           docker images | grep cloudapp
 
   # ================================
-  # JOB 4: Notifikasi PR Comment (CI Gagal)
+  # JOB 4: Integration Tests (Modul 13 — microservices via gateway)
+  # ================================
+  integration-test:
+    name: 🔗 Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: [test-backend, test-frontend]
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Start microservices stack
+        run: |
+          docker compose -f docker-compose.microservices.yml up -d --build \
+            auth-db dashboard-db auth-service dashboard-service gateway
+
+      - name: ⏳ Wait for services
+        run: |
+          echo "Waiting for gateway and dependencies..."
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:8080/health \
+              && curl -sf http://localhost:8080/health/auth \
+              && curl -sf http://localhost:8080/health/dashboard; then
+              echo "All health endpoints ready."
+              exit 0
+            fi
+            echo "Attempt $i/30 — not ready yet, sleeping 10s..."
+            sleep 10
+          done
+          echo "Services failed to become healthy in time."
+          docker compose -f docker-compose.microservices.yml ps -a
+          docker compose -f docker-compose.microservices.yml logs --tail=80
+          exit 1
+
+      - name: 🐍 Setup Python for integration tests
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: 🧪 Run integration tests
+        env:
+          GATEWAY_URL: http://localhost:8080
+        run: |
+          python -m pip install --upgrade pip
+          pip install httpx pytest
+          pytest tests/integration/ -v
+
+      - name: 🛑 Stop services
+        if: always()
+        run: docker compose -f docker-compose.microservices.yml down -v
+
+  # ================================
+  # JOB 5: Notifikasi PR Comment (CI Gagal)
   # ================================
   notify-failure:
     name: 💬 Notify PR on Failure
     runs-on: ubuntu-latest
     timeout-minutes: 5
     # Jalankan HANYA jika salah satu job gagal DAN ini adalah event Pull Request
-    needs: [test-backend, test-frontend, build-docker]
+    needs: [test-backend, test-frontend, build-docker, integration-test]
     if: >
       failure() &&
       github.event_name == 'pull_request'
@@ -165,6 +218,7 @@ jobs:
               'test-backend':  '${{ needs.test-backend.result }}',
               'test-frontend': '${{ needs.test-frontend.result }}',
               'build-docker':  '${{ needs.build-docker.result }}',
+              'integration-test': '${{ needs.integration-test.result }}',
             };
 
             const failedJobs = Object.entries(jobStatus)
