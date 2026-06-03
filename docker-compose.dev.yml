@@ -1,0 +1,32 @@
+# Development override — hot-reload + DB ports untuk migrasi dari host
+# Usage:
+#   docker compose -f docker-compose.microservices.yml -f docker-compose.dev.yml up --build
+
+services:
+  auth-db:
+    ports:
+      - "5433:5432"
+
+  dashboard-db:
+    ports:
+      - "5434:5432"
+
+  auth-service:
+    volumes:
+      - ./services/auth-service:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8001 --reload
+    environment:
+      ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:3000,http://localhost:8080,http://127.0.0.1:5173"
+
+  dashboard-service:
+    volumes:
+      - ./services/dashboard-service:/app
+    command: uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+
+  gateway:
+    ports:
+      - "8080:80"
+
+  frontend:
+    ports:
+      - "3000:80"
