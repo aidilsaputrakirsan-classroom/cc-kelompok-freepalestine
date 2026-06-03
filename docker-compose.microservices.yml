@@ -1,8 +1,17 @@
-# Docker Compose — Microservices Architecture (Week 12–13)
+# Docker Compose — Microservices Architecture (Week 12–14)
 # 6 containers: 2 DBs + Auth Service + Dashboard Service + Gateway + Frontend
 #
 # Dev hot-reload:
 #   docker compose -f docker-compose.microservices.yml -f docker-compose.dev.yml up --build
+#
+# Production:
+#   docker compose -f docker-compose.microservices.yml -f docker-compose.microservices.prod.yml up -d --build
+
+x-logging: &json-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
 
 services:
   # ==================== DATABASES ====================
@@ -21,6 +30,12 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    logging:
+      <<: *json-logging
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "auth-db"
     deploy:
       resources:
         limits:
@@ -44,6 +59,12 @@ services:
       timeout: 5s
       retries: 5
     restart: unless-stopped
+    logging:
+      <<: *json-logging
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "dashboard-db"
     deploy:
       resources:
         limits:
@@ -62,9 +83,17 @@ services:
       ALGORITHM: HS256
       ACCESS_TOKEN_EXPIRE_MINUTES: "60"
       ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:3000,http://localhost:8080"
+      SERVICE_NAME: auth-service
+      LOG_LEVEL: INFO
     depends_on:
       auth-db:
         condition: service_healthy
+    logging:
+      <<: *json-logging
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "auth-service"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8001/health"]
       interval: 15s
@@ -87,11 +116,19 @@ services:
       DATABASE_URL: postgresql://postgres:postgres123@dashboard-db:5432/dashboard_db
       AUTH_SERVICE_URL: http://auth-service:8001
       ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:3000,http://localhost:8080"
+      SERVICE_NAME: dashboard-service
+      LOG_LEVEL: INFO
     depends_on:
       dashboard-db:
         condition: service_healthy
       auth-service:
         condition: service_healthy
+    logging:
+      <<: *json-logging
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "dashboard-service"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8002/health"]
       interval: 15s
@@ -118,6 +155,12 @@ services:
         condition: service_healthy
       dashboard-service:
         condition: service_healthy
+    logging:
+      <<: *json-logging
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "gateway"
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
       interval: 15s
@@ -146,6 +189,12 @@ services:
     depends_on:
       gateway:
         condition: service_healthy
+    logging:
+      <<: *json-logging
+      options:
+        max-size: "10m"
+        max-file: "3"
+        tag: "frontend-ms"
     restart: unless-stopped
     deploy:
       resources:

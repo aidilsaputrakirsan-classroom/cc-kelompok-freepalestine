@@ -1,0 +1,38 @@
+# Production override — Microservices (Modul 14)
+# Usage:
+#   docker compose -f docker-compose.microservices.yml \
+#     -f docker-compose.microservices.prod.yml up -d --build
+#
+# Hanya gateway yang di-expose ke host. DB & service internal tidak dipublish.
+
+services:
+  auth-db:
+    restart: always
+    ports: []
+
+  dashboard-db:
+    restart: always
+    ports: []
+
+  auth-service:
+    restart: always
+    ports: []
+    environment:
+      LOG_LEVEL: WARNING
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+
+  dashboard-service:
+    restart: always
+    ports: []
+    environment:
+      LOG_LEVEL: WARNING
+
+  gateway:
+    restart: always
+    ports:
+      - "8080:80"
+
+  frontend:
+    restart: always
+    # Akses UI via reverse proxy terpisah di server; tidak expose port di prod lokal
+    ports: []

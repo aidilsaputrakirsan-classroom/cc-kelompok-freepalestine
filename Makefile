@@ -1,6 +1,7 @@
-.PHONY: help up down build logs ps clean restart logs-backend shell-backend shell-db \
+.PHONY: help up down build logs logs-monolith ps clean restart logs-backend shell-backend shell-db \
         compose-config images-build images-tag images-push release-images show-image-sizes \
-        lint test pr-check ms-up ms-down ms-dev integration-test migrate-data
+        lint test pr-check ms-up ms-down ms-dev integration-test migrate-data \
+        dev prod ms-prod-down status ms-logs
 
 # Gunakan .env.docker jika ada, fallback ke template agar command tetap bisa dijalankan.
 ENV_FILE ?= $(if $(wildcard .env.docker),.env.docker,.env.docker.example)
@@ -25,7 +26,7 @@ help:
 	@echo "  make up             # Start semua services"
 	@echo "  make build          # Rebuild lalu start"
 	@echo "  make ps             # Status services"
-	@echo "  make logs           # Logs semua services"
+	@echo "  make logs-monolith    # Logs monolith (docker-compose.yml)"
 	@echo "  make logs-backend   # Logs backend saja"
 	@echo "  make down           # Stop dan remove containers"
 	@echo "  make clean          # Down -v + system prune"
@@ -51,6 +52,14 @@ help:
 	@echo "  make integration-test # pytest tests/integration (gateway harus jalan)"
 	@echo "  make migrate-data     # scripts/migrate_data.py monolith -> MS DBs"
 	@echo ""
+	@echo "Modul 14 (observability / production):"
+	@echo "  make dev              # Alias ms-dev (hot-reload)"
+	@echo "  make prod             # Microservices production compose"
+	@echo "  make ms-prod-down     # Stop production microservices stack"
+	@echo "  make logs             # Logs microservices (Modul 14, scripts/logs.sh)"
+	@echo "  make status           # Curl health gateway + services"
+	@echo "  make ms-logs          # Alias untuk make logs"
+	@echo ""
 	@echo "Debug targets:"
 	@echo "  make shell-backend  # Masuk shell backend"
 	@echo "  make shell-db       # Masuk psql database"
@@ -71,7 +80,7 @@ clean:
 restart:
 	$(COMPOSE) restart
 
-logs:
+logs-monolith:
 	$(COMPOSE) logs -f
 
 logs-backend:
@@ -163,3 +172,29 @@ integration-test:
 
 migrate-data:
 	python scripts/migrate_data.py
+
+# --- Modul 14: Production & logging ---
+MS_COMPOSE_PROD := docker compose -f docker-compose.microservices.yml -f docker-compose.microservices.prod.yml
+GATEWAY_URL ?= http://localhost:8080
+
+dev: ms-dev
+
+prod:
+	$(MS_COMPOSE_PROD) up -d --build
+
+ms-prod-down:
+	$(MS_COMPOSE_PROD) down
+
+status:
+	@echo "=== Gateway ==="
+	@curl -sf $(GATEWAY_URL)/health && echo ""
+	@echo "=== Auth ==="
+	@curl -sf $(GATEWAY_URL)/health/auth && echo ""
+	@echo "=== Dashboard ==="
+	@curl -sf $(GATEWAY_URL)/health/dashboard && echo ""
+
+# Modul 14 — logs microservices (auth, dashboard, gateway)
+logs:
+	bash scripts/logs.sh all
+
+ms-logs: logs

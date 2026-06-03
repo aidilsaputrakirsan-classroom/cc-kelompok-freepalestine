@@ -1,6 +1,6 @@
 # CI Pipeline — Free Palestine (Modul 10)
 # Trigger: push/PR ke main
-# Jobs: test-backend + test-frontend → build-docker + integration-test → notify on failure
+# Jobs: test-backend + test-frontend → build-docker + integration-test (+ log artifacts) → notify
 # CD: .github/workflows/cd.yml (DeployCC) — jalan setelah CI sukses di main
 
 name: CI Pipeline
@@ -183,6 +183,26 @@ jobs:
           python -m pip install --upgrade pip
           pip install httpx pytest
           pytest tests/integration/ -v
+
+      - name: 📋 Export Docker logs (Modul 14)
+        if: always()
+        run: |
+          mkdir -p ci-logs
+          docker compose -f docker-compose.microservices.yml ps -a \
+            > "ci-logs/container-status-${{ github.run_id }}.txt" 2>&1 || true
+          docker compose -f docker-compose.microservices.yml logs --no-color \
+            > "ci-logs/microservices-${{ github.run_id }}.log" 2>&1 || true
+          echo "--- Integration test run: ${{ github.run_id }} ---" \
+            >> "ci-logs/microservices-${{ github.run_id }}.log"
+
+      - name: 📤 Upload log artifacts (Modul 14)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: microservices-logs-${{ github.run_id }}
+          path: ci-logs/
+          retention-days: 14
+          if-no-files-found: warn
 
       - name: 🛑 Stop services
         if: always()
