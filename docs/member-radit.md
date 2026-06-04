@@ -105,6 +105,20 @@ Sebagai **Lead QA & Docs**, tanggung jawab utama meliputi:
 - Script demo CRUD Revenue, data persistence, dan inter-container networking
 - Checklist demo UTS dan troubleshooting guide
 
+### Modul 14 — Monitoring & Observability
+- Menulis dokumentasi lengkap `docs/modul14-monitoring-observability.md`
+- Melakukan verifikasi alur Structured JSON Logging dan integrasi `X-Correlation-ID` tracing lintas service
+- Menguji API `/health` dan `/metrics` untuk pemantauan keandalan & statistik
+- Melakukan pengujian fungsionalitas React System Status Page untuk pemantauan visual status service
+
+### Modul 15 — Security & Final Polish
+- Menulis laporan audit keamanan `docs/modul15-security-final.md` dan panduan checklist `docs/security-checklist.md`
+- Menguji pembatasan volume request (Nginx Rate Limiting: 10r/m untuk login, 30r/s untuk API) dan verifikasi respon HTTP 429
+- Melakukan audit konfigurasi Security Headers (CSP, X-Frame-Options, X-Content-Type-Options, Referrer Policy)
+- Memverifikasi pengetatan schema input (FastAPI Pydantic constraints `max_length` pada password, witel, channel, product, description)
+- Memverifikasi implementasi pencegahan kebocoran informasi melalui isolasi console log (`import.meta.env.DEV` check) pada frontend
+- Menyusun panduan operasional server `docs/operations-guide.md` dan release notes Milestone 3 `docs/release-notes-m3.md`
+
 ---
 
 ## 🧪 Hasil Pengujian
@@ -126,6 +140,12 @@ Sebagai **Lead QA & Docs**, tanggung jawab utama meliputi:
 | Circuit Breaker | ✅ | CLOSED → OPEN (3 failures) → HALF_OPEN → CLOSED |
 | Retry Logic | ✅ | 3 attempts dengan exponential backoff berhasil |
 | Graceful Degradation | ✅ | Degraded mode aktif saat Auth Service down |
+| JSON Structured Logging | ✅ | Log terstruktur dengan correlation ID yang terintegrasi |
+| System Status Page | ✅ | Pemantauan realtime frontend aktif dengan auto-refresh 10s |
+| Nginx Rate Limiting | ✅ | Login throttling & API rate limit aktif (HTTP 429) |
+| Security Headers | ✅ | Proteksi X-Frame-Options, CSP, nosniff aktif |
+| Input Size Restriction | ✅ | Pydantic length boundaries memblokir oversized payload |
+| Production Log Hardening | ✅ | Log rahasia tersaring penuh pada client-side console |
 
 ---
 
@@ -143,3 +163,4 @@ Sebagai **Lead QA & Docs**, tanggung jawab utama meliputi:
 | W12 (Modul 12) | Mei 2026 | Dokumentasi arsitektur microservices, API contract, sequence diagram |
 | W13 (Modul 13) | Mei 2026 | Dokumentasi circuit breaker dan retry reliability patterns |
 | W14 (Retroaktif) | Mei 2026 | Dokumentasi docker-architecture dan uts-demo-script |
+| W15 (Modul 14-15) | Mei 2026 | Dokumentasi monitoring, audit keamanan, operations guide, release notes M3 |

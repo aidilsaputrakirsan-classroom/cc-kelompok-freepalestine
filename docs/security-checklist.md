@@ -83,4 +83,5 @@ Dokumen ini merangkum audit keamanan yang telah dilakukan pada project **cc-kelo
 ---
 
 **Terakhir diaudit:** Modul 15 — Final Polish  
-**Auditor:** Lead Backend + Lead Frontend
+**Auditor:** Lead Backend + Lead Frontend + Lead QA & Docs
+
