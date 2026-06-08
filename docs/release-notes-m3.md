@@ -67,11 +67,13 @@ flowchart LR
 | Total Services (Docker) | 5 (auth-service, dashboard-service, gateway, auth-db, dashboard-db) |
 | Total API Endpoints | 18+ |
 | Microservices | 2 (Auth + Dashboard) |
-| CI/CD Jobs | 4 (Test Backend, Test Frontend, Build Docker, Notify) |
+| CI/CD Jobs | 5 (Test Backend, Test Frontend, Build Docker, **Integration Test**, Notify) |
 | Backend Test Coverage | 56% |
 | Backend Tests Passing | 19/19 |
-| Total Commits (all branches) | 80+ |
-| Total PRs Merged | 14+ |
+| Integration Tests Passing | 8/8 |
+| Makefile Targets | 21 target (monolith, microservices, prod, logging, migration) |
+| Total Commits (all branches) | 100+ |
+| Total PRs Merged | 20+ |
 
 ---
 
@@ -98,9 +100,9 @@ flowchart LR
 
 | Nama | NIM | Peran | Kontribusi Modul 12-15 |
 |------|-----|-------|------------------------|
-| Ariel Itsbat Nurhaq | 10231009 | Lead Backend & Frontend | Auth Service, Dashboard Service, StatusPage, Dockerfile hardening |
-| Muhammad Khoiruddin Marzuq | 10231056 | Lead DevOps | API Gateway Nginx, Docker Compose, CI/CD pipeline, deployment |
-| Raditya Yudianto | 10231076 | Lead QA & Docs | Dokumentasi Modul 10-15, CI pipeline fix, test assertion fix, security audit report |
+| Ariel Itsbat Nurhaq | 10231009 | Lead Backend & Frontend | Auth Service, Dashboard Service, StatusPage, Dockerfile hardening, security polish |
+| Muhammad Khoiruddin Marzuq | 10231056 | Lead DevOps & CI/CD | API Gateway, Docker Compose (dev/prod), Integration Tests, Migration Script, Log Scripts, CI artifacts |
+| Raditya Yudianto | 10231076 | Lead QA & Docs | Dokumentasi Modul 10-15, security audit, integration test report, migration guide, DevOps QA review |
 
 ---
 
