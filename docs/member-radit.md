@@ -126,8 +126,19 @@ Sebagai **Lead QA & Docs**, tanggung jawab utama meliputi:
 | Circuit Breaker | ✅ | CLOSED → OPEN (3 failures) → HALF_OPEN → CLOSED |
 | Retry Logic | ✅ | 3 attempts dengan exponential backoff berhasil |
 | Graceful Degradation | ✅ | Degraded mode aktif saat Auth Service down |
+| JSON Structured Logging | ✅ | Log terstruktur dengan correlation ID yang terintegrasi |
+| System Status Page | ✅ | Pemantauan realtime frontend aktif dengan auto-refresh 10s |
+| Nginx Rate Limiting | ✅ | Login throttling & API rate limit aktif (HTTP 429) |
+| Security Headers | ✅ | Proteksi X-Frame-Options, CSP, nosniff aktif |
+| Input Size Restriction | ✅ | Pydantic length boundaries memblokir oversized payload |
+| Production Log Hardening | ✅ | Log rahasia tersaring penuh pada client-side console |
+| Integration Tests (8 tests) | ✅ | Cross-service auth verify, CRUD via gateway — semua passed |
+| Makefile Targets | ✅ | 21 target terverifikasi — monolith, microservices, logging, prod |
+| Migration Script | ✅ | Migrasi users/sales/inbox dari monolith ke MS DB berhasil |
+| Docker Compose Prod Override | ✅ | Hardened config: no exposed ports, restart always, log rotation |
 
 ---
+
 
 ## 📅 Riwayat Aktivitas Mingguan
 
@@ -143,3 +154,5 @@ Sebagai **Lead QA & Docs**, tanggung jawab utama meliputi:
 | W12 (Modul 12) | Mei 2026 | Dokumentasi arsitektur microservices, API contract, sequence diagram |
 | W13 (Modul 13) | Mei 2026 | Dokumentasi circuit breaker dan retry reliability patterns |
 | W14 (Retroaktif) | Mei 2026 | Dokumentasi docker-architecture dan uts-demo-script |
+| W15 (Modul 14-15) | Mei 2026 | Dokumentasi monitoring, audit keamanan, operations guide, release notes M3 |
+| W16 (Review & QA) | Jun 2026 | Review integrasi DevOps Irud: integration tests, migration script, Makefile, compose overrides |
