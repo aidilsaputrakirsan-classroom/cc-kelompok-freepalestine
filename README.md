@@ -136,14 +136,24 @@ tubes-dashboard-telkom/
 │   └── pull_request_template.md      # PR template
 ├── scripts/
 │   ├── ssh.sh / ssh.bat              # SSH via Cloudflare tunnel
-│   └── cloudflaredinstall.bat        # Install cloudflared (Windows)
+│   ├── cloudflaredinstall.bat        # Install cloudflared (Windows)
+│   ├── logs.sh / logs.bat            # Log helper: all, errors, trace, metrics, export (Modul 14)
+│   └── migrate_data.py              # Migrasi data monolith → microservices DB (Modul 13)
+├── tests/
+│   └── integration/                  # Integration tests via API Gateway (Modul 13)
+│       ├── conftest.py               # Fixtures: gateway_url, test_user
+│       └── test_cross_service.py     # 8 integration test cases
 ├── docs/
 │   ├── api-contract.md               # API documentation
 │   ├── deployment-guide.md           # Deploy DeployCC + rollback
 │   ├── git-workflow.md               # Git workflow
-│   └── modul09-verification.md       # Checklist Modul 09
+│   ├── integration-test-report.md    # Laporan integration test QA
+│   ├── data-migration-guide.md       # Panduan migrasi DB monolith → MS
+│   └── devops-tooling-qa-report.md   # QA report Makefile & log scripts
 ├── docker-compose.yml                # Monolith compose
-└── docker-compose.microservices.yml  # Microservices compose
+├── docker-compose.dev.yml            # Microservices dev (hot-reload + DB ports)
+├── docker-compose.microservices.yml  # Microservices production stack
+└── docker-compose.microservices.prod.yml  # Production hardened override
 ```
 
 ## 🔗 API Endpoints
@@ -201,20 +211,34 @@ Secret wajib: `DEPLOY_API_KEY`. Panduan: [docs/deployment-guide.md](docs/deploym
 
 ## 🧪 Testing
 
-**Backend:**
+**Unit Test Backend:**
 
 ```bash
 cd backend
-pip install pytest httpx
+pip install pytest httpx pytest-cov
 pytest test_main.py -v
 ```
 
-**Frontend:**
+**Unit Test Frontend:**
 
 ```bash
 cd frontend
 npm install
 npm test
+```
+
+**Integration Test (Modul 13 — via API Gateway):**
+
+```bash
+# 1. Jalankan microservices stack
+make ms-up
+
+# 2. Tunggu service ready, cek status
+make status
+
+# 3. Jalankan 8 integration tests
+make integration-test
+# atau: GATEWAY_URL=http://localhost:8080 pytest tests/integration/ -v
 ```
 
 ## 🔀 Git Workflow & PR
@@ -238,9 +262,27 @@ File governance yang dipakai:
 Gunakan target berikut sebelum merge PR:
 
 ```bash
-make lint      # Frontend lint + backend syntax check
-make test      # Backend pytest
-make pr-check  # Compose config + build + lint + test
+make lint             # Frontend lint + backend syntax check
+make test             # Backend pytest (unit tests)
+make pr-check         # Compose config + build + lint + test
+make integration-test # Integration tests via gateway (butuh ms-up)
+```
+
+**Microservices workflow:**
+```bash
+make ms-up            # Start microservices stack
+make ms-dev           # Start dengan hot-reload (development)
+make prod             # Start production hardened stack
+make status           # Health check semua services
+make logs             # Tail logs microservices (json-structured)
+make migrate-data     # Migrasi data dari monolith ke microservices DB
+```
+
+**Log inspection (Modul 14):**
+```bash
+./scripts/logs.sh errors           # Filter ERROR/CRITICAL saja
+./scripts/logs.sh trace <corr-id>  # Trace request by Correlation ID
+./scripts/logs.sh export           # Export log ke file
 ```
 
 Jika `make` belum tersedia di Windows, gunakan alternatif berikut:
@@ -249,12 +291,6 @@ Jika `make` belum tersedia di Windows, gunakan alternatif berikut:
 npm --prefix frontend run lint
 python -m compileall -q backend
 pytest backend/test_main.py -v
-```
-
-Untuk production compose override:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
 
 ## 📊 Modul Coverage
