@@ -1,9 +1,12 @@
 import os
+import json
 import uuid
+import time
+import logging
 from typing import List
 from datetime import datetime, timezone
 from dotenv import load_dotenv
-from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File
+from fastapi import FastAPI, Depends, HTTPException, Query, UploadFile, File, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -37,6 +40,39 @@ load_dotenv()
 
 Base.metadata.create_all(bind=engine)
 
+# ==================== STRUCTURED LOGGING (Week 14) ====================
+SERVICE_NAME = "dashboard-telkom-api"
+
+class JSONFormatter(logging.Formatter):
+    """Format log output sebagai JSON terstruktur — memudahkan parsing dan
+    pencarian log di production. Setiap entry memiliki timestamp, level,
+    service name, module, dan opsional correlation_id."""
+    def format(self, record):
+        log_data = {
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "level": record.levelname,
+            "service": SERVICE_NAME,
+            "message": record.getMessage(),
+            "module": record.module,
+        }
+        if hasattr(record, 'correlation_id'):
+            log_data["correlation_id"] = record.correlation_id
+        return json.dumps(log_data)
+
+logger = logging.getLogger(SERVICE_NAME)
+logger.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+handler.setFormatter(JSONFormatter())
+logger.addHandler(handler)
+
+# ==================== METRICS (Week 14) ====================
+request_metrics = {
+    "requests_total": 0,
+    "requests_by_status": {},
+    "request_latency_sum": 0,
+    "errors_total": 0,
+}
+
 app = FastAPI(
     title="Dashboard Telkom API",
     description="REST API Dashboard Monitoring Revenue — Telkom Regional 4 Kalimantan",
@@ -47,6 +83,30 @@ app = FastAPI(
 allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173")
 origins_list = [origin.strip() for origin in allowed_origins.split(",")]
 app.add_middleware(CORSMiddleware, allow_origins=origins_list, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+
+
+# ==================== MIDDLEWARE: Correlation ID + Metrics (Week 14) ====================
+@app.middleware("http")
+async def add_correlation_id(request: Request, call_next):
+    """Middleware yang menambahkan Correlation ID ke setiap request untuk
+    request tracing lintas service, serta mengumpulkan metrics."""
+    correlation_id = request.headers.get("X-Correlation-ID", str(uuid.uuid4()))
+    start = time.time()
+    response = await call_next(request)
+    latency = time.time() - start
+    response.headers["X-Correlation-ID"] = correlation_id
+    # Track metrics
+    request_metrics["requests_total"] += 1
+    status_key = str(response.status_code)
+    request_metrics["requests_by_status"][status_key] = request_metrics["requests_by_status"].get(status_key, 0) + 1
+    request_metrics["request_latency_sum"] += latency
+    if response.status_code >= 400:
+        request_metrics["errors_total"] += 1
+    logger.info(
+        f"{request.method} {request.url.path} -> {response.status_code} ({latency:.3f}s)",
+        extra={"correlation_id": correlation_id},
+    )
+    return response
 
 
 # ==================== HEALTH ====================
@@ -74,6 +134,15 @@ def health_check(db: Session = Depends(get_db)):
 
     status_code = 200 if health["status"] == "healthy" else 503
     return JSONResponse(content=health, status_code=status_code)
+
+
+# ==================== METRICS ENDPOINT (Week 14) ====================
+@app.get("/metrics")
+def get_metrics():
+    """Endpoint metrics untuk monitoring performa aplikasi.
+    Menampilkan total request, distribusi status code, rata-rata latency, dan error count."""
+    avg = request_metrics["request_latency_sum"] / max(request_metrics["requests_total"], 1)
+    return {**request_metrics, "avg_latency_seconds": round(avg, 4), "service": SERVICE_NAME}
 
 
 # ==================== AUTH ====================
