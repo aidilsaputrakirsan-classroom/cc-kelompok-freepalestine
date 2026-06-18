@@ -93,7 +93,7 @@ export default function HomeDashboard() {
     };
 
     const kpiCards = summary ? [
-        { title: 'Total Revenue Target', value: formatRupiah(summary.total_target), icon: DollarSign, color: '#3b82f6' },
+        { title: 'Total Revenue', value: formatRupiah(summary.total_target), icon: DollarSign, color: '#3b82f6' },
         { title: 'Total Revenue Actual', value: formatRupiah(summary.total_actual), icon: TrendingUp, color: '#3b82f6' },
         { title: 'Achievement', value: `${summary.achievement}%`, icon: Activity, color: '#3b82f6' },
         { title: 'Total SSL', value: `${summary.total_ssl_actual.toLocaleString()} / ${summary.total_ssl_target.toLocaleString()}`, icon: Package, color: '#3b82f6' },
